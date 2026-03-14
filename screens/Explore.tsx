@@ -189,15 +189,19 @@ export default function Explore(props: any) {
   }
 
   const renderSuggestions = ({ item, index }: Suggestion) => {
+    const isSelected = selectedSuggestionID === index;
     return (
       <>
         <Text
           style={{
-            color: Colors[colorScheme].suggestionsText,
-            opacity: selectedSuggestionID === index ? 0.3 : 1,
-            backgroundColor: Colors[colorScheme].suggestionsBGColor,
+            color: isSelected ? Colors[colorScheme].suggestionsBGColor : Colors[colorScheme].suggestionsText,
+            backgroundColor: isSelected ? Colors[colorScheme].suggestionsText : Colors[colorScheme].suggestionsBGColor,
             fontSize: 20,
             paddingLeft: 5,
+            paddingVertical: 4,
+            fontWeight: isSelected ? "bold" : "normal",
+            borderLeftWidth: isSelected ? 4 : 0,
+            borderLeftColor: "#2aa198",
           }}
           onPress={() => {
             setSelelectedSuggestionID(index);
@@ -416,7 +420,7 @@ export default function Explore(props: any) {
             renderItem={renderSuggestions}
             estimatedItemSize={27}
             keyExtractor={(item) => String(item.refIndex)}
-            extraData={suggestions}
+            extraData={[suggestions, selectedSuggestionID]}
           />
         </View>
       ) : undefined}

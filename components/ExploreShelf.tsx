@@ -10,7 +10,7 @@ import {
 import { Rating } from "react-native-ratings";
 import { LinearProgress } from "@rneui/themed";
 import { useNavigation } from "@react-navigation/native";
-import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { Audiobook, Review } from "../types.js";
 
 import AudiobookAccordionList from "../components/audiobookAccordionList";
@@ -33,6 +33,73 @@ import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
 import { Pressable } from "react-native";
 const db = openDatabase();
+
+// Memoized item component — only re-renders when its specific book's
+// progress, rating, or cover changes, not on every parent state update.
+const ExploreBookItem = React.memo(({
+  item, index, db, progress, ratingFetched, bookCover, reviewURL,
+  resizeCoverImageWidth, resizeCoverImageHeight, windowWidth, windowHeight,
+  colorScheme, audiobooksProgress, setAudiobooksProgress,
+  addAudiobookToHistory, getAverageAudiobookReview, bookCovers, reviewURLS,
+}: any) => (
+  <View>
+    <AudiobookCover
+      item={item}
+      index={index}
+      db={db}
+      audiobooksProgress={audiobooksProgress}
+      setAudiobooksProgress={setAudiobooksProgress}
+      addAudiobookToHistory={addAudiobookToHistory}
+      getAverageAudiobookReview={getAverageAudiobookReview}
+      bookCovers={bookCovers}
+      reviewURLS={reviewURLS}
+      resizeCoverImageWidth={resizeCoverImageWidth}
+      resizeCoverImageHeight={resizeCoverImageHeight}
+      windowWidth={windowWidth}
+      windowHeight={windowHeight}
+    />
+    {progress?.listening_progress_percent > 0 && (
+      <LinearProgress
+        color={Colors[colorScheme].audiobookProgressColor}
+        value={progress.listening_progress_percent}
+        variant="determinate"
+        trackColor={Colors[colorScheme].audiobookProgressTrackColor}
+        animation={false}
+      />
+    )}
+    {progress?.audiobook_rating > 0 ? (
+      <Rating
+        showRating={false}
+        imageSize={20}
+        ratingCount={5}
+        startingValue={progress.audiobook_rating}
+        readonly={true}
+        tintColor={Colors[colorScheme].ratingBackgroundColor}
+      />
+    ) : ratingFetched ? (
+      <Text style={exploreItemStyles.noRatingText}>No rating</Text>
+    ) : null}
+    <AudiobookAccordionList
+      accordionTitle={item?.title}
+      audiobookTitle={item?.title}
+      audiobookAuthorFirstName={item?.authors[0]?.first_name}
+      audiobookAuthorLastName={item?.authors[0]?.last_name}
+      audiobookTotalTime={item?.totaltime}
+      audiobookCopyrightYear={item?.copyright_year}
+      audiobookGenres={JSON.stringify(item?.genres)}
+      audiobookLanguage={item?.language}
+    />
+  </View>
+));
+
+const exploreItemStyles = StyleSheet.create({
+  noRatingText: {
+    textAlign: "center",
+    fontSize: 11,
+    color: "#999",
+    paddingVertical: 2,
+  },
+});
 
 export default function ExploreShelf(props: any) {
   const colorScheme = useColorScheme();
@@ -364,57 +431,31 @@ export default function ExploreShelf(props: any) {
   const windowHeight = Dimensions.get("window").height;
   const resizeCoverImageHeight = windowHeight / 5;
   const resizeCoverImageWidth = windowWidth / 2 - 42;
-  const keyExtractor = (item: any, index: number) => String(item?.id ?? index);
-  const renderItem = ({ item, index }) => (
-    <View>
-      <AudiobookCover
-        item={item}
-        index={index}
-        db={db}
-        audiobooksProgress={audiobooksProgress}
-        setAudiobooksProgress={setAudiobooksProgress}
-        addAudiobookToHistory={addAudiobookToHistory}
-        getAverageAudiobookReview={getAverageAudiobookReview}
-        bookCovers={bookCovers}
-        reviewURLS={reviewURLS}
-        resizeCoverImageWidth={resizeCoverImageWidth}
-        resizeCoverImageHeight={resizeCoverImageHeight}
-        windowWidth={windowWidth}
-        windowHeight={windowHeight}
-      />
-      {audiobooksProgress[item?.id]?.listening_progress_percent > 0 && (
-        <LinearProgress
-          color={Colors[colorScheme].audiobookProgressColor}
-          value={audiobooksProgress[item?.id]?.listening_progress_percent}
-          variant="determinate"
-          trackColor={Colors[colorScheme].audiobookProgressTrackColor}
-          animation={false}
-        />
-      )}
-      {audiobooksProgress[item?.id]?.audiobook_rating > 0 ? (
-        <Rating
-          showRating={false}
-          imageSize={20}
-          ratingCount={5}
-          startingValue={audiobooksProgress[item?.id]?.audiobook_rating}
-          readonly={true}
-          tintColor={Colors[colorScheme].ratingBackgroundColor}
-        />
-      ) : ratingsFetched.has(item?.id) ? (
-        <Text style={styles.noRatingText}>No rating</Text>
-      ) : null}
-      <AudiobookAccordionList
-        accordionTitle={item?.title}
-        audiobookTitle={item?.title}
-        audiobookAuthorFirstName={item?.authors[0]?.first_name}
-        audiobookAuthorLastName={item?.authors[0]?.last_name}
-        audiobookTotalTime={item?.totaltime}
-        audiobookCopyrightYear={item?.copyright_year}
-        audiobookGenres={JSON.stringify(item?.genres)}
-        audiobookLanguage={item?.language}
-      />
-    </View>
-  );
+  const keyExtractor = useCallback((item: any, index: number) => String(item?.id ?? index), []);
+
+  const renderItem = useCallback(({ item, index }: any) => (
+    <ExploreBookItem
+      item={item}
+      index={index}
+      db={db}
+      progress={audiobooksProgress[item?.id]}
+      ratingFetched={ratingsFetched.has(item?.id)}
+      bookCover={bookCovers[index]}
+      reviewURL={reviewURLS[index]}
+      resizeCoverImageWidth={resizeCoverImageWidth}
+      resizeCoverImageHeight={resizeCoverImageHeight}
+      windowWidth={windowWidth}
+      windowHeight={windowHeight}
+      colorScheme={colorScheme}
+      audiobooksProgress={audiobooksProgress}
+      setAudiobooksProgress={setAudiobooksProgress}
+      addAudiobookToHistory={addAudiobookToHistory}
+      getAverageAudiobookReview={getAverageAudiobookReview}
+      bookCovers={bookCovers}
+      reviewURLS={reviewURLS}
+    />
+  ), [audiobooksProgress, ratingsFetched, bookCovers, reviewURLS, colorScheme,
+      resizeCoverImageWidth, resizeCoverImageHeight, windowWidth, windowHeight]);
 
   if (!loadingAudioBooks) {
     return (
@@ -424,6 +465,7 @@ export default function ExploreShelf(props: any) {
           keyExtractor={keyExtractor}
           renderItem={renderItem}
           numColumns={2}
+          extraData={audiobooksProgress}
           removeClippedSubviews={true}
           maxToRenderPerBatch={6}
           initialNumToRender={6}
@@ -462,11 +504,5 @@ const styles = StyleSheet.create({
   },
   ActivityIndicatorStyle: {
     top: windowHeight / 2 - 90,
-  },
-  noRatingText: {
-    textAlign: "center",
-    fontSize: 11,
-    color: "#999",
-    paddingVertical: 2,
   },
 });
