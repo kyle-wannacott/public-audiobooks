@@ -28,6 +28,7 @@ import {
   upsertRatingCacheDB,
   loadRatingsCacheDB,
   loadRatingsCacheForIds,
+  loadProgressForIds,
 } from "../db/database_functions";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
@@ -61,10 +62,11 @@ const ExploreBookItem = React.memo(({
     {progress?.listening_progress_percent > 0 && (
       <LinearProgress
         color={Colors[colorScheme].audiobookProgressColor}
-        value={progress.listening_progress_percent}
+        value={Number(progress.listening_progress_percent)}
         variant="determinate"
         trackColor={Colors[colorScheme].audiobookProgressTrackColor}
         animation={false}
+        style={{ height: 6, marginBottom: 2 }}
       />
     )}
     {progress?.audiobook_rating > 0 ? (
@@ -304,7 +306,7 @@ export default function ExploreShelf(props: any) {
     }
   }, [data.books]);
 
-  // Auto-fetch ratings: first check DB cache (fast bulk query), only hit network for uncached books.
+  // Auto-fetch ratings AND progress: first check DB cache (fast bulk query), only hit network for uncached books.
   // Wrapped in InteractionManager to avoid interfering with tab animations.
   useEffect(() => {
     if (reviewURLS.length === 0 || !data?.books) return;
@@ -314,7 +316,22 @@ export default function ExploreShelf(props: any) {
     let cancelled = false;
 
     const task = InteractionManager.runAfterInteractions(() => {
-      // Single bulk DB query to find which books are already cached
+      // Load listening progress for this batch of books from DB
+      loadProgressForIds(db, allIds, (progressRows) => {
+        if (cancelled) return;
+        if (Object.keys(progressRows).length > 0) {
+          setAudiobooksProgress((prev: any) => {
+            const updates: any = {};
+            Object.entries(progressRows).forEach(([id, row]: any) => {
+              // Merge: keep any existing data but update progress fields from DB
+              updates[id] = { ...(prev[id] || {}), ...row };
+            });
+            return { ...prev, ...updates };
+          });
+        }
+      });
+
+      // Single bulk DB query to find which books are already ratings-cached
       loadRatingsCacheForIds(db, allIds, (cached) => {
         if (cancelled) return;
 

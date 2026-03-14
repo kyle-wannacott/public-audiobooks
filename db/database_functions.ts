@@ -288,6 +288,33 @@ export function loadRatingsCacheForIds(
   });
 }
 
+// Bulk query: load progress rows for a specific set of audiobook IDs.
+// Used by ExploreShelf to check listening progress for returned search results.
+export function loadProgressForIds(
+  db: any,
+  ids: string[],
+  callback: (progress: Record<string, any>) => void
+) {
+  if (ids.length === 0) {
+    callback({});
+    return;
+  }
+  const placeholders = ids.map(() => "?").join(",");
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `SELECT * FROM ${audiobookProgressTableName} WHERE ${audiobookId} IN (${placeholders});`,
+      ids,
+      (_: any, { rows }: any) => {
+        const progress: Record<string, any> = {};
+        rows._array.forEach((row: any) => {
+          progress[row.audiobook_id] = row;
+        });
+        callback(progress);
+      }
+    );
+  });
+}
+
 // ─── AsyncStorage helpers ────────────────────────────────────────────────────
 
 export const storeAsyncData = async (key: any, value: any) => {
