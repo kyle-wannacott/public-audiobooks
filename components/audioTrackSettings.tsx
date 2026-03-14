@@ -6,6 +6,7 @@ import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityI
 import Slider from "@react-native-community/slider";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
+import { useAudio } from "../hooks/AudioContext";
 
 function AudioTrackSettings(props: any) {
   const {
@@ -14,110 +15,21 @@ function AudioTrackSettings(props: any) {
     audioPlayerSettings,
     setAudioPlayerSettings,
     storeAudioTrackSettings,
-    sound,
   } = props;
 
   const colorScheme = useColorScheme();
   const currentColorScheme = Colors[colorScheme];
-
-  // async function onToggleMuteSwitch(muteToggled: boolean) {
-  // try {
-  // setAudioPlayerSettings({
-  // ...audioPlayerSettings,
-  // isMuted: !audioPlayerSettings.isMuted,
-  // });
-  // const result = await sound.current.getStatusAsync();
-  // if (muteToggled) {
-  // if (result.isLoaded === true) {
-  // await sound.current.setIsMutedAsync(true);
-  // }
-  // } else if (!muteToggled) {
-  // if (result.isLoaded === true) {
-  // await sound.current.setIsMutedAsync(false);
-  // }
-  // }
-  // await storeAudioTrackSettings({
-  // ...audioPlayerSettings,
-  // isMuted: !audioPlayerSettings.isMuted,
-  // });
-  // } catch (e) {
-  // console.log(e);
-  // }
-  // }
-
-  // async function onTogglePitchSwitch(pitchToggled: boolean) {
-  // try {
-  // setAudioPlayerSettings({
-  // ...audioPlayerSettings,
-  // shouldCorrectPitch: !audioPlayerSettings.shouldCorrectPitch,
-  // });
-  // const result = await sound.current.getStatusAsync();
-  // if (pitchToggled) {
-  // if (result.isLoaded === true) {
-  // await sound.current.setRateAsync(
-  // audioPlayerSettings.rate,
-  // true
-  // );
-  // }
-  // } else if (!pitchToggled) {
-  // if (result.isLoaded === true) {
-  // await sound.current.setRateAsync(
-  // audioPlayerSettings.rate,
-  // false
-  // );
-  // }
-  // }
-  // await storeAudioTrackSettings({
-  // ...audioPlayerSettings,
-  // shouldCorrectPitch: !audioPlayerSettings.shouldCorrectPitch,
-  // });
-  // } catch (e) {
-  // console.log(e);
-  // }
-  // }
-  //
-  // async function onToggleLoopSwitch(loopToggled: boolean) {
-    // try {
-      // setAudioPlayerSettings({
-        // ...audioPlayerSettings,
-        // isLooping: !audioPlayerSettings.isLooping,
-      // });
-      // const result = await sound.current.getStatusAsync();
-      // if (loopToggled) {
-        // if (result.isLoaded === true) {
-          // await sound.current.setIsLoopingAsync(true);
-        // }
-      // } else if (!loopToggled) {
-        // if (result.isLoaded === true) {
-          // await sound.current.setIsLoopingAsync(false);
-        // }
-      // }
-      // await storeAudioTrackSettings({
-        // ...audioPlayerSettings,
-        // isLooping: !audioPlayerSettings.isLooping,
-      // });
-    // } catch (e) {
-      // console.log(e);
-    // }
-  // }
+  const audio = useAudio();
 
   async function updateAudtiotrackSpeed(updateRate: number) {
     try {
-      setAudioPlayerSettings({
+      const newSettings = {
         ...audioPlayerSettings,
         rate: updateRate,
-      });
-      const result = await sound.current.getStatusAsync();
-      if (result.isLoaded === true) {
-        await sound.current.setRateAsync(
-          updateRate,
-          audioPlayerSettings.shouldCorrectPitch
-        );
-      }
-      await storeAudioTrackSettings({
-        ...audioPlayerSettings,
-        rate: updateRate,
-      });
+      };
+      setAudioPlayerSettings(newSettings);
+      audio.applyPlayerSettings(newSettings);
+      await storeAudioTrackSettings(newSettings);
     } catch (e) {
       console.log(e);
     }
@@ -125,18 +37,13 @@ function AudioTrackSettings(props: any) {
 
   async function updateAudiotrackVolume(newVolumeLevel: number) {
     try {
-      const result = await sound.current.getStatusAsync();
-      setAudioPlayerSettings({
+      const newSettings = {
         ...audioPlayerSettings,
         volume: newVolumeLevel,
-      });
-      if (result.isLoaded === true) {
-        await sound.current.setVolumeAsync(newVolumeLevel);
-      }
-      await storeAudioTrackSettings({
-        ...audioPlayerSettings,
-        volume: newVolumeLevel,
-      });
+      };
+      setAudioPlayerSettings(newSettings);
+      audio.applyPlayerSettings(newSettings);
+      await storeAudioTrackSettings(newSettings);
     } catch (e) {
       console.log(e);
     }

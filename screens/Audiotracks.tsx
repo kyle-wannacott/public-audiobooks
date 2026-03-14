@@ -1,9 +1,8 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ActivityIndicator, Dimensions, Image } from "react-native";
 import { ListItem, LinearProgress, Card } from "@rneui/themed";
 import { Rating } from "react-native-ratings";
 import * as rssParser from "react-native-rss-parser";
-import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import { StyleSheet, Text, View, SectionList } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
@@ -12,21 +11,24 @@ import AudioTrackControls from "../components/audioTrackControls";
 import AudioTrackSettings from "../components/audioTrackSettings";
 import AudiotrackSliderWithCurrentPlaying from "../components/AudiotrackSliderWithCurrentPlaying";
 import MakeUserReview from "../components/audioTrackMakeReview";
-// import getAverageAudiobookReview from "../screens/Explore";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openDatabase, roundNumberTwoDecimal } from "../db/utils";
 import { useNavigation } from "@react-navigation/native";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
+import { useAudio, AudiobookMeta } from "../hooks/AudioContext";
+import { downloadAudiobook, DownloadProgress } from "../db/downloadService";
+import {
+  getDownloadedTracksForAudiobook,
+  isAudiobookFullyDownloaded,
+} from "../db/database_functions";
 
 const db = openDatabase();
 import {
-  updateAudioTrackPositionsDB,
   updateIfBookShelvedDB,
   initialAudioBookProgressStoreDB,
   updateAudiobookRatingDB,
-  updateAudioTrackIndexDB,
   audiobookProgressTableName,
   updateUsersAudiobookReviewDB,
 } from "../db/database_functions";
@@ -34,6 +36,8 @@ import {
 import { getAsyncData, storeAsyncData } from "../db/database_functions";
 
 function Audiotracks(props: any) {
+  const audio = useAudio();
+
   const [reviewInformation, setReviewInformation] = useState({
     reviewTitle: "",
     reviewText: "",
@@ -48,46 +52,22 @@ function Audiotracks(props: any) {
   const [isAudiobookDescriptionExpanded, setIsAudiobookDescriptionExpanded] =
     useState<boolean>(false);
 
-  const currentAudioTrackIndex = useRef(0);
   const [isLoadingAudiobookData, setIsLoadingAudioBookData] = useState(true);
   const [isLoadingAudiotrackUrls, setIsLoadingAudiotrackUrls] =
     useState(true);
-  const [audiotrackLoadingStatuses, setAudiotrackLoadingStatuses] = useState({
-    loadedCurrentAudiotrack: false,
-    loadingCurrentAudiotrack: false,
-  });
-  const [isAudioPaused, setIsAudioPaused] = useState(false);
-  const [isPlaying, SetIsPlaying] = useState(false);
-  const [currentAudiotrackPlaying, setCurrentAudiotrackPlaying] = useState({
-    audioTrackChapterPlayingTitle: "",
-    audioTrackReader: "",
-    duration: 0,
-  });
 
-  const [currentSliderPosition, setCurrentSliderPosition] = useState(0.0);
   const [isVisible, setIsVisible] = useState(false);
   const [makeReviewOptions, setMakeReviewOptions] = useState(false);
-  const [audioPlayerSettings, setAudioPlayerSettings] = useState({
-    rate: 1.0,
-    shouldCorrectPitch: true,
-    volume: 1.0,
-    isMuted: false,
-    isLooping: false,
-    shouldPlay: false,
-  });
+
   const [audiotracksData, setAudiotracksData] = useState<any>({
-    linearProgessBars: [],
-    currentAudiotrackPositionsMs: [],
     shelveIconToggle: 0,
     audiobookRating: 0,
-    totalAudioBookListeningProgress: 0,
-    totalAudioBookListeningTimeMS: 0,
   });
-  const [audioModeSettings, setAudioModeSettings] = useState<any>({
-    staysActiveInBackground: true,
-    shouldDuckAndroid: true,
-    playThroughEarpieceAndroid: false,
-  });
+
+  // Download state
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [isFullyDownloaded, setIsFullyDownloaded] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<DownloadProgress[]>([]);
 
   const {
     urlRss,
@@ -109,7 +89,6 @@ function Audiotracks(props: any) {
     urlLibrivox,
     urlIArchive,
   } = props.route.params;
-  // console.log(props.route.params)
 
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
@@ -147,89 +126,27 @@ function Audiotracks(props: any) {
     }
   }, [title]);
 
-  React.useEffect(() => {
-    try {
-      getAsyncData("audioModeSettings").then((audioModeSettingsRetrieved) => {
-        audioModeSettingsRetrieved;
-        if (audioModeSettingsRetrieved) {
-          return setAudioModeSettings(audioModeSettingsRetrieved);
-        }
-      });
-      getAsyncData("audioTrackSettingsTest").then(
-        (audioTrackSettingsRetrieved) => {
-          if (audioTrackSettingsRetrieved) {
-            return setAudioPlayerSettings(audioTrackSettingsRetrieved);
-          }
-        }
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  }, []);
-
   const storeAudioTrackSettings = async (settings: object) => {
     await storeAsyncData("audioTrackSettingsTest", settings);
-  };
-
-  const updateAudioBookPosition = async (
-    audiobook_id: any,
-    audiotrack_progress_bars: any,
-    current_audiotrack_positions: any
-  ) => {
-    try {
-      const initialValue = 0;
-      const current_listening_time = current_audiotrack_positions.reduce(
-        (previousValue: any, currentValue: any) =>
-          previousValue + Number(currentValue),
-        initialValue
-      );
-      const listening_progress_percent =
-        current_listening_time / 1000 / totalTimeSecs;
-      updateAudioTrackPositionsDB(db, {
-        audiotrack_progress_bars: JSON.stringify(audiotrack_progress_bars),
-        listening_progress_percent,
-        current_listening_time,
-        current_audiotrack_positions: JSON.stringify(
-          current_audiotrack_positions
-        ),
-        audiobook_id,
-      });
-    } catch (err) {
-      console.log(err);
-    }
   };
 
   const initialLoadOfAudiotracksDB = (audiobook_id: number) => {
     db.transaction((tx) => {
       try {
         tx.executeSql(
-          `select * from ${audiobookProgressTableName}`,
-          [],
+          `select * from ${audiobookProgressTableName} where audiobook_id=?`,
+          [audiobook_id],
           (_, { rows }) => {
             rows["_array"].forEach((row) => {
-              if (audiobook_id === row.audiobook_id) {
-                if (row?.current_audiotrack_index) {
-                  currentAudioTrackIndex.current =
-                    row?.current_audiotrack_index;
-                }
-                const TotalListenTimeAndProgress = updateCoverBookProgress(
-                  row?.current_audiotrack_positions
-                );
-                setAudiotracksData({
-                  ...audiotracksData,
-                  linearProgessBars: JSON.parse(row?.audiotrack_progress_bars),
-                  currentAudiotrackPositionsMs: JSON.parse(
-                    row?.current_audiotrack_positions
-                  ),
-                  shelveIconToggle: row?.audiobook_shelved,
-                  audiobookRating: row?.audiobook_rating,
-                  totalAudioBookListeningTimeMS: TotalListenTimeAndProgress[0],
-                  totalAudioBookListeningProgress:
-                    TotalListenTimeAndProgress[1],
-                });
-                if (row?.users_audiobook_review !== undefined) {
+              setAudiotracksData((prev: any) => ({
+                ...prev,
+                shelveIconToggle: row?.audiobook_shelved,
+                audiobookRating: row?.audiobook_rating,
+              }));
+              if (row?.users_audiobook_review != null) {
+                try {
                   setReviewInformation(JSON.parse(row?.users_audiobook_review));
-                }
+                } catch (e) {}
               }
             });
           }
@@ -240,24 +157,12 @@ function Audiotracks(props: any) {
     }, undefined);
   };
 
+  // Check download status
   useEffect(() => {
-    async function setAudioMode() {
-      try {
-        await setAudioModeAsync({
-          playsInSilentMode: true,
-          shouldPlayInBackground: audioModeSettings.staysActiveInBackground,
-          interruptionMode: audioModeSettings.shouldDuckAndroid ? 'duckOthers' : 'doNotMix',
-          shouldRouteThroughEarpiece: audioModeSettings.playThroughEarpieceAndroid,
-          allowsRecording: false,
-        });
-      } catch (e) {
-        console.log(e);
-      }
-    }
-    setAudioMode();
-  }, [audioModeSettings]);
-  const sound = React.useRef(createAudioPlayer(null, { updateInterval: 1000 }));
-  const statusSubscription = useRef<any>(null);
+    isAudiobookFullyDownloaded(db, audioBookId, numSections, (downloaded) => {
+      setIsFullyDownloaded(downloaded);
+    });
+  }, [audioBookId, numSections]);
 
   useEffect(() => {
     fetch(urlRss)
@@ -332,10 +237,10 @@ function Audiotracks(props: any) {
           averageAudiobookRating =
             sumOfStarsFromReviews / starsFromReviews.length;
         }
-        setAudiotracksData({
-          ...audiotracksData,
+        setAudiotracksData((prev: any) => ({
+          ...prev,
           audiobookRating: averageAudiobookRating,
-        });
+        }));
         updateAudiobookRatingDB(
           db,
           audioBookId,
@@ -347,16 +252,10 @@ function Audiotracks(props: any) {
     }
   }, [reviews]);
 
+  // Initialize DB row + load saved shelve/rating
   useEffect(() => {
     try {
       let initialAudioBookSections = new Array(numSections).fill(0);
-      setAudiotracksData({
-        ...audiotracksData,
-        linearProgessBars: initialAudioBookSections,
-        currentAudiotrackPositionsMs: initialAudioBookSections,
-      });
-      // will only happen if no row in db already.
-
       initialAudioBookProgressStoreDB(db, {
         audiobook_id: audioBookId,
         audiotrack_progress_bars: JSON.stringify(initialAudioBookSections),
@@ -370,274 +269,35 @@ function Audiotracks(props: any) {
     }
   }, []);
 
+  // Load book into global audio context when chapters + URLs are ready
+  const bookLoadedRef = useRef(false);
   useEffect(() => {
-    return () => {
-      try {
-        if (statusSubscription.current) {
-          statusSubscription.current.remove();
-        }
-        sound.current.release();
-      } catch (err) {
-        console.log(err);
-      }
-    };
-  }, []);
-
-  function sliderPositionCalculation(progress: number) {
-    let sliderPositionCalculate = progress * 100;
-    return sliderPositionCalculate;
-  }
-  async function updateLinearProgressBars(progress: number) {
-    let updatedLinearProgessBarPositions = [
-      ...audiotracksData.linearProgessBars,
-    ];
-    updatedLinearProgessBarPositions[currentAudioTrackIndex.current] =
-      audiotracksData.linearProgessBars[currentAudioTrackIndex.current] =
-        progress;
-  }
-  async function updateAudiotrackPositions(dataPosition: number) {
-    let updatedCurrentAudiotrackPositions = [
-      ...audiotracksData.currentAudiotrackPositionsMs,
-    ];
-    updatedCurrentAudiotrackPositions[currentAudioTrackIndex.current] =
-      audiotracksData.currentAudiotrackPositionsMs[
-        currentAudioTrackIndex.current
-      ] = dataPosition;
-  }
-
-  async function updateAndStoreAudiobookPositions(data: any) {
-    try {
-      const currentAudiotrackProgress =
-        data.positionMillis / data.durationMillis;
-      updateLinearProgressBars(currentAudiotrackProgress);
-      updateAudiotrackPositions(data.positionMillis);
-      const sliderPositionCalculated = sliderPositionCalculation(
-        currentAudiotrackProgress
-      );
-
-      setCurrentSliderPosition(sliderPositionCalculated);
-      updateAudioBookPosition(
+    if (
+      chapters &&
+      chapters.length > 0 &&
+      URLSToPlayAudiotracks.length > 0 &&
+      !bookLoadedRef.current
+    ) {
+      bookLoadedRef.current = true;
+      audio.loadBook({
         audioBookId,
-        audiotracksData.linearProgessBars,
-        audiotracksData.currentAudiotrackPositionsMs
-      );
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  const UpdateStatus = async (data: any) => {
-    try {
-      const positionMillis = data.currentTime * 1000;
-      const durationMillis = data.duration * 1000;
-      if (data.didJustFinish) {
-        updateAndStoreAudiobookPositions({ positionMillis, durationMillis });
-        if (
-          currentAudioTrackIndex.current >=
-          URLSToPlayAudiotracks.length - 1
-        ) {
-          SetIsPlaying(false);
-          setIsAudioPaused(true);
-        } else {
-          return HandleNextTrack();
-        }
-      } else if (positionMillis > 0 && durationMillis > 0) {
-        updateAndStoreAudiobookPositions({ positionMillis, durationMillis });
-        // expo-audio duration becomes available asynchronously after replace();
-        // keep currentAudiotrackPlaying.duration in sync
-        setCurrentAudiotrackPlaying((prev) => {
-          if (prev.duration !== durationMillis) {
-            return { ...prev, duration: durationMillis };
-          }
-          return prev;
-        });
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
-
-  const updateAudiotrackSlider = async (data: any) => {
-    try {
-      if (sound.current.isLoaded) {
-        const durationMs = sound.current.duration * 1000;
-        const currentPosition = (data / 100) * durationMs;
-        await sound.current.seekTo(currentPosition / 1000);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
-
-  const forwardTenSeconds = async () => {
-    try {
-      if (sound.current.isLoaded) {
-        const currentPosition =
-          audiotracksData.currentAudiotrackPositionsMs[
-            currentAudioTrackIndex.current
-          ];
-        await sound.current.seekTo((currentPosition + 10000) / 1000);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
-
-  const rewindTenSeconds = async () => {
-    try {
-      if (sound.current.isLoaded) {
-        const currentPosition =
-          audiotracksData.currentAudiotrackPositionsMs[
-            currentAudioTrackIndex.current
-          ];
-        await sound.current.seekTo(Math.max(0, currentPosition - 10000) / 1000);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
-
-  const ResetPlayer = async () => {
-    try {
-      if (sound.current.isLoaded) {
-        SetIsPlaying(false);
-        await sound.current.seekTo(0);
-        sound.current.pause();
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
-
-  const LoadAudio = async (index: number, audiotrackPositions = 0) => {
-    currentAudioTrackIndex.current = index;
-    updateAudioTrackIndexDB(db, currentAudioTrackIndex.current, audioBookId);
-    setAudiotrackLoadingStatuses({
-      ...audiotrackLoadingStatuses,
-      loadingCurrentAudiotrack: true,
-    });
-    try {
-      // Remove old listener before replacing source
-      if (statusSubscription.current) {
-        statusSubscription.current.remove();
-      }
-      // Replace the audio source (stops and clears any current audio)
-      sound.current.replace({ uri: URLSToPlayAudiotracks[index] });
-
-      // Apply playback settings
-      sound.current.setPlaybackRate(audioPlayerSettings.rate);
-      sound.current.loop = audioPlayerSettings.isLooping;
-      sound.current.muted = audioPlayerSettings.isMuted;
-      sound.current.volume = audioPlayerSettings.volume;
-      sound.current.shouldCorrectPitch = audioPlayerSettings.shouldCorrectPitch;
-
-      // Seek to the saved position for this track
-      if (audiotrackPositions > 0) {
-        await sound.current.seekTo(audiotrackPositions / 1000);
-      }
-
-      // Set up the status listener for this track
-      statusSubscription.current = sound.current.addListener(
-        'playbackStatusUpdate',
-        UpdateStatus
-      );
-
-      setCurrentAudiotrackPlaying({
-        ...currentAudiotrackPlaying,
-        audioTrackReader: chapters[index]?.readers[0]?.display_name,
-        audioTrackChapterPlayingTitle:
-          chapters[index]?.section_number + ". " + chapters[index]?.title,
-        duration: sound.current.duration * 1000,
+        urlRss,
+        coverImage,
+        numSections,
+        title,
+        authorFirstName,
+        authorLastName,
+        totalTime,
+        totalTimeSecs,
+        chapters,
+        trackUrls: URLSToPlayAudiotracks,
       });
-      setAudiotrackLoadingStatuses({
-        ...audiotrackLoadingStatuses,
-        loadingCurrentAudiotrack: false,
-        loadedCurrentAudiotrack: true,
-      });
-      await PlayAudio();
-    } catch (error) {
-      setAudiotrackLoadingStatuses({
-        ...audiotrackLoadingStatuses,
-        loadingCurrentAudiotrack: false,
-        loadedCurrentAudiotrack: false,
-      });
-      console.log("Error: ", error);
     }
-  };
-
-  const PlayAudio = async () => {
-    try {
-      if (!sound.current.playing) {
-        sound.current.play();
-        SetIsPlaying(true);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
-
-  const PauseAudio = async () => {
-    try {
-      setIsAudioPaused(false);
-      if (sound.current.playing) {
-        sound.current.pause();
-        setIsAudioPaused(true);
-        SetIsPlaying(false);
-      }
-    } catch (error) {
-      console.log("Error: ", error);
-    }
-  };
-
-  const HandleNextTrack = async () => {
-    try {
-      if (currentAudioTrackIndex.current < URLSToPlayAudiotracks.length - 1) {
-        currentAudioTrackIndex.current += 1;
-        setCurrentSliderPosition(0.0);
-        await LoadAudio(
-          currentAudioTrackIndex.current,
-          audiotracksData.currentAudiotrackPositionsMs[
-            currentAudioTrackIndex.current
-          ]
-        );
-      } else if (
-        currentAudioTrackIndex.current >=
-        URLSToPlayAudiotracks.length - 1
-      ) {
-        currentAudioTrackIndex.current = 0;
-        setCurrentSliderPosition(0.0);
-        await ResetPlayer();
-        await LoadAudio(
-          currentAudioTrackIndex.current,
-          audiotracksData.currentAudiotrackPositionsMs[
-            currentAudioTrackIndex.current
-          ]
-        );
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  const HandlePrevTrack = async () => {
-    try {
-      if (currentAudioTrackIndex.current - 1 >= 0) {
-        currentAudioTrackIndex.current -= 1;
-        await LoadAudio(
-          currentAudioTrackIndex.current,
-          audiotracksData.currentAudiotrackPositionsMs[
-            currentAudioTrackIndex.current
-          ]
-        );
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  };
+  }, [chapters, URLSToPlayAudiotracks]);
 
   function msToTime(duration: number) {
-    let seconds = Math.floor((duration / 1000) % 60),
-      minutes = Math.floor((duration / (1000 * 60)) % 60),
+    let seconds: any = Math.floor((duration / 1000) % 60),
+      minutes: any = Math.floor((duration / (1000 * 60)) % 60),
       hours = Math.floor((duration / (1000 * 60 * 60)) % 24);
     minutes = minutes < 10 ? "0" + minutes : minutes;
     seconds = seconds < 10 ? "0" + seconds : seconds;
@@ -680,10 +340,9 @@ function Audiotracks(props: any) {
 
   const PlayFromListenButton = async (index: number) => {
     try {
-      setCurrentSliderPosition(0.0);
-      await LoadAudio(
+      await audio.loadTrack(
         index,
-        audiotracksData.currentAudiotrackPositionsMs[index]
+        audio.currentAudiotrackPositionsMs[index] || 0
       );
     } catch (e) {
       console.log(e);
@@ -692,11 +351,27 @@ function Audiotracks(props: any) {
 
   const PlayFromStartOfTrack = async (index: number) => {
     try {
-      setCurrentSliderPosition(0.0);
-      await LoadAudio(index, 0);
+      await audio.loadTrack(index, 0);
     } catch (e) {
       console.log(e);
     }
+  };
+
+  const handleDownload = async () => {
+    if (isDownloading || isFullyDownloaded || URLSToPlayAudiotracks.length === 0) return;
+    setIsDownloading(true);
+    await downloadAudiobook(
+      audioBookId,
+      URLSToPlayAudiotracks,
+      (progress) => {
+        setDownloadProgress(progress);
+        const allDone = progress.every((p) => p.status === "complete");
+        if (allDone) {
+          setIsFullyDownloaded(true);
+          setIsDownloading(false);
+        }
+      }
+    );
   };
 
   const renderAudiotracks = ({ item, index }: any) => (
@@ -714,7 +389,7 @@ function Audiotracks(props: any) {
         accessibilityLabel={`Resume playing ${item?.section_number}: ${
           item?.title
         } ${GetDurationFormat(
-          audiotracksData.currentAudiotrackPositionsMs[index]
+          audio.currentAudiotrackPositionsMs[index]
         )} out of ${FormatChapterDurations(chapters[index]?.playtime)}`}
         onPress={() => {
           PlayFromListenButton(index);
@@ -757,7 +432,7 @@ function Audiotracks(props: any) {
           <Text style={{ color: Colors[colorScheme].text }}>
             {": "}
             {GetDurationFormat(
-              audiotracksData.currentAudiotrackPositionsMs[index]
+              audio.currentAudiotrackPositionsMs[index]
             )}
           </Text>
           <Text style={{ color: Colors[colorScheme].text }}>{" | "}</Text>
@@ -768,7 +443,7 @@ function Audiotracks(props: any) {
 
         <LinearProgress
           color={Colors[colorScheme].audiobookProgressColor}
-          value={audiotracksData.linearProgessBars[index]}
+          value={audio.linearProgressBars[index]}
           variant="determinate"
           trackColor={Colors[colorScheme].audiobookProgressTrackColor}
           animation={false}
@@ -990,7 +665,7 @@ function Audiotracks(props: any) {
 
             <LinearProgress
               color={Colors[colorScheme].audiobookProgressColor}
-              value={audiotracksData?.totalAudioBookListeningProgress}
+              value={audio.totalListeningProgress}
               variant="determinate"
               trackColor={Colors[colorScheme].audiobookProgressTrackColor}
               animation={false}
@@ -1001,7 +676,7 @@ function Audiotracks(props: any) {
             />
             <View style={styles.coverImageTimeListened}>
               <Text style={{ color: Colors[colorScheme].text }}>
-                {msToTime(audiotracksData.totalAudioBookListeningTimeMS)}
+                {msToTime(audio.totalListeningTimeMs)}
               </Text>
               <Text style={{ color: Colors[colorScheme].text }}>
                 {totalTime}
@@ -1066,7 +741,45 @@ function Audiotracks(props: any) {
                 No rating
               </Text>
             )}
-            <View style={styles.shelveButtons}></View>
+            <View style={styles.shelveButtons}>
+              <Button
+                accessibilityLabel={
+                  isFullyDownloaded
+                    ? "Audiobook downloaded"
+                    : isDownloading
+                    ? "Downloading audiobook..."
+                    : "Download audiobook for offline listening"
+                }
+                mode={Colors[colorScheme].buttonMode}
+                onPress={handleDownload}
+                disabled={isDownloading || isFullyDownloaded}
+                style={{
+                  backgroundColor: Colors[colorScheme].buttonBackgroundColor,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name={
+                    isFullyDownloaded
+                      ? "check-circle"
+                      : isDownloading
+                      ? "progress-download"
+                      : "download"
+                  }
+                  size={24}
+                  color={
+                    isFullyDownloaded
+                      ? Colors[colorScheme].activityIndicatorColor
+                      : Colors[colorScheme].buttonIconColor
+                  }
+                />
+              </Button>
+              {isDownloading && (
+                <Text style={{ color: Colors[colorScheme].text, marginLeft: 8, alignSelf: "center" }}>
+                  {downloadProgress.filter((p) => p.status === "complete").length}/
+                  {downloadProgress.length} tracks
+                </Text>
+              )}
+            </View>
           </Card>
         </View>
       );
@@ -1169,10 +882,9 @@ function Audiotracks(props: any) {
         <AudioTrackSettings
           isVisible={isVisible}
           toggleOverlay={toggleSettingsOverlay}
-          audioPlayerSettings={audioPlayerSettings}
+          audioPlayerSettings={audio.audioPlayerSettings}
           storeAudioTrackSettings={storeAudioTrackSettings}
-          setAudioPlayerSettings={setAudioPlayerSettings}
-          sound={sound}
+          setAudioPlayerSettings={audio.setAudioPlayerSettings}
         />
 
         <MakeUserReview
@@ -1228,35 +940,33 @@ function Audiotracks(props: any) {
 
         <View style={{ paddingBottom: insets.bottom }}>
           <AudiotrackSliderWithCurrentPlaying
-            currentSliderPosition={currentSliderPosition}
-            SeekUpdate={updateAudiotrackSlider}
+            currentSliderPosition={audio.currentSliderPosition}
+            SeekUpdate={audio.seekToPosition}
             GetDurationFormat={GetDurationFormat}
-            Duration={currentAudiotrackPlaying.duration}
+            Duration={audio.currentTrackInfo.duration}
             coverImage={coverImage}
             audioTrackChapterPlayingTitle={
-              currentAudiotrackPlaying.audioTrackChapterPlayingTitle
+              audio.currentTrackInfo.title
             }
-            audioTrackReader={currentAudiotrackPlaying.audioTrackReader}
+            audioTrackReader={audio.currentTrackInfo.reader}
           />
 
           <AudioTrackControls
-            HandlePrevTrack={HandlePrevTrack}
-            HandleNextTrack={HandleNextTrack}
-            LoadAudio={LoadAudio}
-            PlayAudio={PlayAudio}
-            isPlaying={isPlaying}
-            PauseAudio={PauseAudio}
-            isAudioPaused={isAudioPaused}
-            loadingCurrentAudiotrack={
-              audiotrackLoadingStatuses.loadingCurrentAudiotrack
-            }
-            loadedCurrentAudiotrack={
-              audiotrackLoadingStatuses.loadedCurrentAudiotrack
-            }
-            currentAudioTrackIndex={currentAudioTrackIndex}
-            forwardTenSeconds={forwardTenSeconds}
-            rewindTenSeconds={rewindTenSeconds}
-            trackPositions={audiotracksData}
+            HandlePrevTrack={audio.handlePrevTrack}
+            HandleNextTrack={audio.handleNextTrack}
+            LoadAudio={audio.loadTrack}
+            PlayAudio={audio.playAudio}
+            isPlaying={audio.isPlaying}
+            PauseAudio={audio.pauseAudio}
+            isAudioPaused={audio.isAudioPaused}
+            loadingCurrentAudiotrack={audio.isLoading}
+            loadedCurrentAudiotrack={audio.isLoadedOnce}
+            currentAudioTrackIndex={{ current: audio.currentTrackIndex }}
+            forwardTenSeconds={audio.forwardTenSeconds}
+            rewindTenSeconds={audio.rewindTenSeconds}
+            trackPositions={{
+              currentAudiotrackPositionsMs: audio.currentAudiotrackPositionsMs,
+            }}
           ></AudioTrackControls>
         </View>
       </View>

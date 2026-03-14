@@ -7697,6 +7697,7 @@ __metadata:
     expo-audio: "npm:~1.1.1"
     expo-av: "npm:~16.0.8"
     expo-constants: "npm:~18.0.13"
+    expo-file-system: "npm:~19.0.21"
     expo-font: "npm:~14.0.11"
     expo-linking: "npm:~8.0.11"
     expo-navigation-bar: "npm:~5.0.10"

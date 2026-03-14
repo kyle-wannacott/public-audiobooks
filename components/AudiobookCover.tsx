@@ -1,6 +1,6 @@
 import { View, StyleSheet, Image, Dimensions, Pressable } from "react-native";
 import { ListItem, LinearProgress } from "@rneui/themed";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import { useNavigation } from "@react-navigation/native";
@@ -11,7 +11,10 @@ import { Review } from "../types.js";
 import {
   initialAudioBookProgressStoreDB,
   updateIfBookShelvedDB,
+  isAudiobookFullyDownloaded,
 } from "../db/database_functions";
+import { useAudio } from "../hooks/AudioContext";
+import * as rssParser from "react-native-rss-parser";
 
 export default function AudiobookCover(props) {
   const {
@@ -29,8 +32,61 @@ export default function AudiobookCover(props) {
   } = props;
   const colorScheme = useColorScheme();
   const navigation = useNavigation();
+  const audio = useAudio();
 
   const [avatarOnPressEnabled, setAvatarOnPressEnabled] = useState(true);
+  const [isDownloaded, setIsDownloaded] = useState(false);
+
+  useEffect(() => {
+    if (item?.id && item?.num_sections) {
+      isAudiobookFullyDownloaded(db, String(item.id), item.num_sections, (downloaded) => {
+        setIsDownloaded(downloaded);
+      });
+    }
+  }, [item?.id]);
+
+  const handleQuickPlay = async () => {
+    try {
+      addAudiobookToHistory(index, item);
+      const response = await fetch(item?.url_rss);
+      const responseData = await response.text();
+      const rss = await rssParser.parse(responseData);
+      const trackUrls = rss.items.map((i: any) => i.enclosures[0]?.url);
+
+      const chaptersResponse = await fetch(
+        `https://librivox.org/api/feed/audiobooks/?id=${item?.id}&fields={sections}&extended=1&format=json`
+      );
+      const chaptersJson = await chaptersResponse.json();
+      const chapters = chaptersJson?.books?.[0]?.sections || [];
+
+      if (audio.currentBook?.audioBookId === String(item?.id) && audio.isPlaying) {
+        audio.pauseAudio();
+        return;
+      }
+
+      if (audio.currentBook?.audioBookId !== String(item?.id)) {
+        await audio.loadBook({
+          audioBookId: String(item?.id),
+          urlRss: item?.url_rss,
+          coverImage: bookCovers[index],
+          numSections: item?.num_sections,
+          title: item?.title,
+          authorFirstName: item?.authors[0]?.first_name,
+          authorLastName: item?.authors[0]?.last_name,
+          totalTime: item?.totaltime,
+          totalTimeSecs: item?.totaltimesecs,
+          chapters,
+          trackUrls,
+        });
+      }
+
+      const savedIdx = audio.currentTrackIndex;
+      const savedPos = audio.currentAudiotrackPositionsMs[savedIdx] || 0;
+      await audio.loadTrack(savedIdx, savedPos);
+    } catch (e) {
+      console.log("Quick play error:", e);
+    }
+  };
 
   return (
     <ListItem
@@ -165,6 +221,56 @@ export default function AudiobookCover(props) {
               }
               size={30}
               color={Colors[colorScheme].shelveAudiobookIconColor}
+            />
+          </Button>
+
+          {/* Download status icon */}
+          {isDownloaded && (
+            <View
+              style={{
+                position: "absolute",
+                top: 50,
+                right: 0,
+                width: 30,
+                height: 30,
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <MaterialCommunityIcons
+                name="check-circle"
+                size={22}
+                color={Colors[colorScheme].activityIndicatorColor}
+              />
+            </View>
+          )}
+
+          {/* Quick play button */}
+          <Button
+            mode="text"
+            onPress={handleQuickPlay}
+            accessibilityLabel={
+              audio.currentBook?.audioBookId === String(item?.id) && audio.isPlaying
+                ? `Pause ${item.title}`
+                : `Play ${item.title}`
+            }
+            style={{
+              position: "absolute",
+              bottom: 0,
+              right: 0,
+              width: 30,
+              height: 40,
+              margin: 0,
+            }}
+          >
+            <MaterialCommunityIcons
+              name={
+                audio.currentBook?.audioBookId === String(item?.id) && audio.isPlaying
+                  ? "pause-circle"
+                  : "play-circle"
+              }
+              size={26}
+              color={Colors[colorScheme].activityIndicatorColor}
             />
           </Button>
         </Pressable>

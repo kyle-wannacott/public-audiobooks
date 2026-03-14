@@ -315,6 +315,149 @@ export function loadProgressForIds(
   });
 }
 
+// ─── Downloads tracking ─────────────────────────────────────────────────────
+
+export const audiobookDownloadsTableName = "audiobook_downloads";
+
+export function createDownloadsTable(db: any) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS ${audiobookDownloadsTableName} (
+        id INTEGER PRIMARY KEY NOT NULL,
+        audiobook_id TEXT NOT NULL,
+        track_index INTEGER NOT NULL,
+        file_path TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        UNIQUE(audiobook_id, track_index)
+      );`
+    );
+  });
+}
+
+export function insertDownloadTrack(
+  db: any,
+  audiobook_id: string,
+  track_index: number,
+  file_path: string,
+  status: string = "pending"
+) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `INSERT OR REPLACE INTO ${audiobookDownloadsTableName} (audiobook_id, track_index, file_path, status) VALUES (?, ?, ?, ?);`,
+      [audiobook_id, track_index, file_path, status]
+    );
+  });
+}
+
+export function updateDownloadTrackStatus(
+  db: any,
+  audiobook_id: string,
+  track_index: number,
+  status: string
+) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `UPDATE ${audiobookDownloadsTableName} SET status=? WHERE audiobook_id=? AND track_index=?;`,
+      [status, audiobook_id, track_index]
+    );
+  });
+}
+
+export function getDownloadedTracksForAudiobook(
+  db: any,
+  audiobook_id: string,
+  callback: (tracks: any[]) => void
+) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `SELECT * FROM ${audiobookDownloadsTableName} WHERE audiobook_id=?;`,
+      [audiobook_id],
+      (_: any, { rows }: any) => {
+        callback(rows._array);
+      }
+    );
+  });
+}
+
+export function isAudiobookFullyDownloaded(
+  db: any,
+  audiobook_id: string,
+  numSections: number,
+  callback: (isDownloaded: boolean) => void
+) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `SELECT COUNT(*) as count FROM ${audiobookDownloadsTableName} WHERE audiobook_id=? AND status='complete';`,
+      [audiobook_id],
+      (_: any, { rows }: any) => {
+        callback(rows._array[0].count >= numSections);
+      }
+    );
+  });
+}
+
+export function deleteDownloadedAudiobook(
+  db: any,
+  audiobook_id: string,
+  callback?: () => void
+) {
+  db.transaction(
+    (tx: any) => {
+      tx.executeSql(
+        `DELETE FROM ${audiobookDownloadsTableName} WHERE audiobook_id=?;`,
+        [audiobook_id]
+      );
+    },
+    null,
+    callback
+  );
+}
+
+export function getDownloadedAudiobookIds(
+  db: any,
+  callback: (ids: string[]) => void
+) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `SELECT DISTINCT audiobook_id FROM ${audiobookDownloadsTableName} WHERE status='complete' GROUP BY audiobook_id;`,
+      [],
+      (_: any, { rows }: any) => {
+        callback(rows._array.map((r: any) => r.audiobook_id));
+      }
+    );
+  });
+}
+
+export function getFullyDownloadedAudiobooks(
+  db: any,
+  callback: (audiobooks: any[]) => void
+) {
+  // Join downloads with cache and progress to get full audiobook info
+  // Only return audiobooks where ALL tracks are downloaded
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `SELECT c.*, p.listening_progress_percent, p.audiobook_shelved, p.audiobook_rating,
+              p.current_audiotrack_index, p.audiotrack_progress_bars, p.current_audiotrack_positions,
+              p.current_listening_time,
+              d.total_tracks, d.completed_tracks
+       FROM ${audiobookHistoryTableName} c
+       INNER JOIN (
+         SELECT audiobook_id, 
+                COUNT(*) as total_tracks,
+                SUM(CASE WHEN status='complete' THEN 1 ELSE 0 END) as completed_tracks
+         FROM ${audiobookDownloadsTableName}
+         GROUP BY audiobook_id
+       ) d ON d.audiobook_id = c.audiobook_id
+       LEFT JOIN ${audiobookProgressTableName} p ON p.audiobook_id = c.audiobook_id
+       WHERE d.completed_tracks = c.audiobook_num_sections AND d.completed_tracks > 0;`,
+      [],
+      (_: any, { rows }: any) => {
+        callback(rows._array);
+      }
+    );
+  });
+}
+
 // ─── AsyncStorage helpers ────────────────────────────────────────────────────
 
 export const storeAsyncData = async (key: any, value: any) => {

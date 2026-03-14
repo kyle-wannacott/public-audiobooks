@@ -12,7 +12,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
-import { ColorSchemeName } from "react-native";
+import { ColorSchemeName, View } from "react-native";
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import { RootStackParamList, RootTabParamList } from "../types";
@@ -21,8 +21,10 @@ import { StatusBar } from "expo-status-bar";
 import Audiotracks from "../screens/Audiotracks";
 import History from "../screens/History";
 import Bookshelf from "../screens/Bookshelf";
+import Downloads from "../screens/Downloads";
 import Settings from "../screens/Settings";
 import Explore from "../screens/Explore";
+import MiniPlayer from "../components/MiniPlayer";
 import * as NavigationBar from "expo-navigation-bar";
 import { isEdgeToEdge } from "react-native-is-edge-to-edge";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -175,6 +177,10 @@ function BookshelfTabs() {
         name="Finished"
         component={Bookshelf}
       />
+      <BookshelfTab.Screen
+        name="Downloads"
+        component={Downloads}
+      />
     </BookshelfTab.Navigator>
   );
 }
@@ -183,72 +189,75 @@ function BottomTabNavigator() {
   const colorScheme = useColorScheme();
 
   return (
-    <BottomTab.Navigator
-      initialRouteName="Explore"
-      screenOptions={({ route }) => ({
-        headerShown: false,
-        tabBarStyle: {
-          height: 110,
-          backgroundColor: Colors[colorScheme].tabBackgroundColor,
-        },
-        tabBarItemStyle: { paddingVertical: 8 },
-        tabBarIconStyle: { flex: 1 },
-        tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
-        tabBarIcon: ({ focused, color, size }) => {
-          size = 32;
-          let iconName;
-          switch (route.name) {
-            case "Explore":
-              iconName = focused ? "book-search" : "book-search";
-              break;
-            case "Bookshelf":
-              iconName = focused ? "bookshelf" : "bookshelf";
-              break;
-            case "History":
-              iconName = focused ? "history" : "history";
-              break;
-            case "Settings":
-              iconName = focused ? "account-cog" : "account-cog";
-              break;
-          }
-          return (
-            <MaterialCommunityIcons name={iconName} size={size} color={color} />
-          );
-        },
-        tabBarActiveTintColor: Colors[colorScheme].tabIconSelected,
-        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
-      })}
-    >
-      <BottomTab.Screen
-        name="Explore"
-        component={SearchTopTabs}
-        options={{
-          tabBarLabel: "Explore",
-        }}
-      />
-      <BottomTab.Screen
-        name="Bookshelf"
-        component={BookshelfTabs}
-        options={{
-          tabBarLabel: "Bookshelf",
-          unmountOnBlur: false,
-        }}
-      />
-      <BottomTab.Screen
-        name="History"
-        component={History}
-        options={{
-          tabBarLabel: "History",
-          unmountOnBlur: false,
-        }}
-      />
-      <BottomTab.Screen
-        name="Settings"
-        component={Settings}
-        options={{
-          tabBarLabel: "Settings",
-        }}
-      />
-    </BottomTab.Navigator>
+    <View style={{ flex: 1 }}>
+      <BottomTab.Navigator
+        initialRouteName="Explore"
+        screenOptions={({ route }) => ({
+          headerShown: false,
+          tabBarStyle: {
+            height: 110,
+            backgroundColor: Colors[colorScheme].tabBackgroundColor,
+          },
+          tabBarItemStyle: { paddingVertical: 8 },
+          tabBarIconStyle: { flex: 1 },
+          tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
+          tabBarIcon: ({ focused, color, size }) => {
+            size = 32;
+            let iconName;
+            switch (route.name) {
+              case "Explore":
+                iconName = focused ? "book-search" : "book-search";
+                break;
+              case "Bookshelf":
+                iconName = focused ? "bookshelf" : "bookshelf";
+                break;
+              case "History":
+                iconName = focused ? "history" : "history";
+                break;
+              case "Settings":
+                iconName = focused ? "account-cog" : "account-cog";
+                break;
+            }
+            return (
+              <MaterialCommunityIcons name={iconName} size={size} color={color} />
+            );
+          },
+          tabBarActiveTintColor: Colors[colorScheme].tabIconSelected,
+          tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
+        })}
+      >
+        <BottomTab.Screen
+          name="Explore"
+          component={SearchTopTabs}
+          options={{
+            tabBarLabel: "Explore",
+          }}
+        />
+        <BottomTab.Screen
+          name="Bookshelf"
+          component={BookshelfTabs}
+          options={{
+            tabBarLabel: "Bookshelf",
+            unmountOnBlur: false,
+          }}
+        />
+        <BottomTab.Screen
+          name="History"
+          component={History}
+          options={{
+            tabBarLabel: "History",
+            unmountOnBlur: false,
+          }}
+        />
+        <BottomTab.Screen
+          name="Settings"
+          component={Settings}
+          options={{
+            tabBarLabel: "Settings",
+          }}
+        />
+      </BottomTab.Navigator>
+      <MiniPlayer />
+    </View>
   );
 }

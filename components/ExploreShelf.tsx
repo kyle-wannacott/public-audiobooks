@@ -28,6 +28,7 @@ import {
   loadRatingsCacheDB,
   loadRatingsCacheForIds,
   loadProgressForIds,
+  createDownloadsTable,
 } from "../db/database_functions";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
@@ -116,6 +117,7 @@ export default function ExploreShelf(props: any) {
       createAudioBookDataTable(db);
       createHistoryTableDB(db);
       createRatingsCacheTable(db);
+      createDownloadsTable(db);
     } catch (err) {
       console.log(err);
     }
