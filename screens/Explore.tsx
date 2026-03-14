@@ -436,12 +436,12 @@ export default function Explore(props: any) {
               onPress={() => setBookDisplayMode('grid')}
               style={{ marginRight: 8 }}
               contentStyle={{ height: 36 }}
-              textColor={bookDisplayMode === 'grid' ? '#fff' : '#ffffff'}
+              textColor={bookDisplayMode === 'grid' ? '#fff' : '#4CAF50'}
             >
               <MaterialCommunityIcons
                 name="view-grid"
                 size={18}
-                color={bookDisplayMode === 'grid' ? '#fff' : currentColorScheme.buttonIconColor}
+                color={bookDisplayMode === 'grid' ? '#fff' : '#4CAF50'}
               />
               {"  Grid"}
             </Button>
@@ -449,12 +449,12 @@ export default function Explore(props: any) {
               mode={bookDisplayMode === 'list' ? 'contained' : 'outlined'}
               onPress={() => setBookDisplayMode('list')}
               contentStyle={{ height: 36 }}
-              textColor={bookDisplayMode === 'list' ? '#fff' : '#ffffff'}
+              textColor={bookDisplayMode === 'list' ? '#fff' : '#4CAF50'}
             >
               <MaterialCommunityIcons
                 name="view-list"
                 size={18}
-                color={bookDisplayMode === 'list' ? '#fff' : currentColorScheme.buttonIconColor}
+                color={bookDisplayMode === 'list' ? '#fff' : '#4CAF50'}
               />
               {"  List"}
             </Button>

@@ -62,18 +62,7 @@ const ExploreBookItem = React.memo(({
       windowHeight={windowHeight}
       displayMode={displayMode}
     />
-    {displayMode === 'grid' && progress?.audiobook_rating > 0 ? (
-      <Rating
-        showRating={false}
-        imageSize={20}
-        ratingCount={5}
-        startingValue={progress.audiobook_rating}
-        readonly={true}
-        tintColor={Colors[colorScheme].ratingBackgroundColor}
-      />
-    ) : displayMode === 'grid' && ratingFetched ? (
-      <Text style={exploreItemStyles.noRatingText}>No rating</Text>
-    ) : null}
+    {/* Rating is rendered inside AudiobookCover as a tappable widget */}
     {displayMode === 'grid' && (
       <AudiobookAccordionList
         accordionTitle={item?.title}

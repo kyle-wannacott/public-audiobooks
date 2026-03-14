@@ -487,7 +487,7 @@ export default function AudiobookCover(props) {
           <TouchableOpacity onPress={openReviews} activeOpacity={0.7} style={{ alignItems: 'center', paddingVertical: 2 }}>
             <View pointerEvents="none">
               <Rating
-                imageSize={10}
+                imageSize={18}
                 ratingCount={5}
                 startingValue={Number(rating)}
                 showRating={false}
@@ -497,7 +497,11 @@ export default function AudiobookCover(props) {
               />
             </View>
           </TouchableOpacity>
-        ) : null}
+        ) : (
+          <TouchableOpacity onPress={openReviews} activeOpacity={0.7} style={{ alignItems: 'center', paddingVertical: 3 }}>
+            <Text style={{ fontSize: 11, color: '#999' }}>No rating</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </ListItem>
     {/* Reviews Modal */}
