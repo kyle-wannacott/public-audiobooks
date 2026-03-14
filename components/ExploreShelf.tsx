@@ -203,14 +203,15 @@ export default function ExploreShelf(props: any) {
         } else if (book.coverart_jpg) {
           coverUrl = book.coverart_jpg;
         } else {
-          const pathParts = book.url_zip_file.split("/");
-          const identifier = pathParts[pathParts.length - 2];
+          // URL format: https://archive.org/compress/{identifier}/formats=...
+          // identifier is always at index 4 after splitting by "/"
+          const identifier = book.url_zip_file.split("/")[4];
           coverUrl = encodeURI(
             `https://archive.org/services/get-item-image.php?identifier=${identifier}`
           );
         }
-        const pathParts = book.url_zip_file.split("/");
-        const identifier = pathParts[pathParts.length - 2];
+        // URL format: https://archive.org/compress/{identifier}/formats=...
+        const identifier = book.url_zip_file.split("/")[4];
         const reviewUrl = encodeURI(
           `https://archive.org/metadata/${identifier}/reviews/`
         );

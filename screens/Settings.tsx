@@ -116,7 +116,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="run-fast"
                 size={50}
-                color={currentColorScheme.settingsIconsColor}
+                color={"#FF8C00"}
               />
             }
             hasNavArrow={false}
@@ -144,7 +144,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="duck"
                 size={50}
-                color={currentColorScheme.settingsIconsColor}
+                color={"#008B8B"}
               />
             }
             hasNavArrow={false}
@@ -172,7 +172,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="headset"
                 size={50}
-                color={currentColorScheme.settingsIconsColor}
+                color={"#7B68EE"}
               />
             }
             hasNavArrow={false}
@@ -280,7 +280,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="github"
                 size={50}
-                color={currentColorScheme.settingsIconsColor}
+                color={"#6e40c9"}
               />
             }
             title="GitHub: kyle-wannacott"
@@ -311,7 +311,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="account-tie-voice"
                 size={50}
-                color={currentColorScheme.settingsIconsColor}
+                color={"#1E90FF"}
               />
             }
             title="LibriVox"

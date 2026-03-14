@@ -184,10 +184,10 @@ function BottomTabNavigator() {
           height: 80,
           backgroundColor: Colors[colorScheme].tabBackgroundColor,
         },
-        tabBarIconStyle: { height: 36, width: 36 },
-        tabBarLabelStyle: { fontSize: 11, marginBottom: 6 },
+        tabBarIconStyle: { marginBottom: -2 },
+        tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
         tabBarIcon: ({ focused, color, size }) => {
-          size = 36;
+          size = 30;
           let iconName;
           switch (route.name) {
             case "Explore":

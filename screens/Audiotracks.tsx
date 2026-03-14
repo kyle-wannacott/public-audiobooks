@@ -516,6 +516,14 @@ function Audiotracks(props: any) {
       // Replace the audio source (stops and clears any current audio)
       sound.current.replace({ uri: URLSToPlayAudiotracks[index] });
 
+      // Register for lock screen / background controls
+      sound.current.setActiveForLockScreen(true, {
+        title: chapters[index]?.title ?? title,
+        artist: `${authorFirstName} ${authorLastName}`.trim(),
+        albumTitle: title,
+        artworkUrl: coverImage ?? undefined,
+      });
+
       // Apply playback settings
       sound.current.setPlaybackRate(audioPlayerSettings.rate);
       sound.current.loop = audioPlayerSettings.isLooping;
@@ -1076,9 +1084,9 @@ function Audiotracks(props: any) {
       // https://archive.org/services/docs/api/reviews.html
       // https://archive.org/account/s3.php
       try {
-        let audiobookIdentifier = urlIArchive.split("/");
-        audiobookIdentifier =
-          audiobookIdentifier[audiobookIdentifier.length - 1];
+        // url_iarchive is often empty; derive identifier from url_zip_file
+        // URL format: https://archive.org/compress/{identifier}/formats=...
+        const audiobookIdentifier = urlZipFile.split("/")[4];
         fetch(
           `https://archive.org/services/reviews.php?identifier=${audiobookIdentifier}`,
           {

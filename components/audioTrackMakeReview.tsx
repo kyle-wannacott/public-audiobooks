@@ -1,4 +1,4 @@
-import { StyleSheet, Dimensions, TextInput, Text, View } from "react-native";
+import { StyleSheet, Dimensions, TextInput, Text, View, KeyboardAvoidingView, ScrollView, Platform, Keyboard } from "react-native";
 import { Overlay } from "@rneui/themed";
 import { Button } from "react-native-paper";
 import { Rating } from "react-native-ratings";
@@ -28,6 +28,11 @@ function MakeUserReview(props: any) {
           width: windowWidth - 20,
         }}
       >
+        <KeyboardAvoidingView
+          behavior={Platform.OS === "ios" ? "padding" : "height"}
+          keyboardVerticalOffset={Platform.OS === "ios" ? 60 : 20}
+        >
+          <ScrollView keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
         <Text
           style={{
             marginBottom: 5,
@@ -79,6 +84,8 @@ function MakeUserReview(props: any) {
               reviewTitle: reviewTitleRef,
             });
           }}
+          returnKeyType="next"
+          blurOnSubmit={false}
         ></TextInput>
         <Text style={{ fontSize: 18, color: currentColorScheme.text }}>
           Review Text:
@@ -107,6 +114,9 @@ function MakeUserReview(props: any) {
               reviewText: reviewTextRef,
             });
           }}
+          returnKeyType="done"
+          blurOnSubmit={true}
+          onSubmitEditing={() => Keyboard.dismiss()}
         ></TextInput>
         <View
           style={{
@@ -136,6 +146,8 @@ function MakeUserReview(props: any) {
             />
           </Button>
         </View>
+          </ScrollView>
+        </KeyboardAvoidingView>
       </Overlay>
     </View>
   );
