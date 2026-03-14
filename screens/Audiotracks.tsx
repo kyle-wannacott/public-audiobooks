@@ -1183,7 +1183,7 @@ function Audiotracks(props: any) {
             <SectionList
               sections={AudioTracksScreenData}
               keyExtractor={(item: any, index: number) =>
-                String(item?.id ?? item?.createdate ?? index)
+                `${index}_${String(item?.id ?? item?.createdate ?? index)}`
               }
               initialNumToRender={25}
               maxToRenderPerBatch={50}

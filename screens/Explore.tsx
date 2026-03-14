@@ -415,7 +415,7 @@ export default function Explore(props: any) {
             data={suggestions}
             renderItem={renderSuggestions}
             estimatedItemSize={27}
-            keyExtractor={(item) => item.refIndex}
+            keyExtractor={(item) => String(item.refIndex)}
             extraData={suggestions}
           />
         </View>

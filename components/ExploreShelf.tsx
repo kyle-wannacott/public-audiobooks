@@ -5,6 +5,7 @@ import {
   ActivityIndicator,
   Dimensions,
   Text,
+  InteractionManager,
 } from "react-native";
 import { Rating } from "react-native-ratings";
 import { useNavigation } from "@react-navigation/native";
@@ -38,6 +39,7 @@ export default function ExploreShelf(props: any) {
   const [bookCovers, setBookCovers] = useState<any[]>([]);
   const [reviewURLS, setReviewsUrlList] = useState<any[]>([]);
   const [audiobooksProgress, setAudiobooksProgress] = useState({});
+  const [ratingsFetched, setRatingsFetched] = useState<Set<any>>(new Set());
   const {
     apiSettings,
     requestAudiobookAmount,
@@ -234,54 +236,60 @@ export default function ExploreShelf(props: any) {
   }, [data.books]);
 
   // Auto-fetch ratings for all books after review URLs are ready, staggered to
-  // avoid hammering the archive.org API. Skips books already rated.
+  // avoid hammering the archive.org API. Runs after interactions to avoid tab animation jank.
   useEffect(() => {
     if (reviewURLS.length === 0 || !data?.books) return;
     const books = Object.values(data.books) as any[];
     const timeouts: ReturnType<typeof setTimeout>[] = [];
-    books.forEach((book: any, index: number) => {
-      if (!reviewURLS[index]) return;
-      const t = setTimeout(() => {
-        fetch(reviewURLS[index])
-          .then((r) => r.json())
-          .then((json) => {
-            if (json?.result?.length > 0) {
-              const stars = json.result.reduce(
-                (sum: number, r: any) => sum + Number(r.stars), 0
-              );
-              const avg = stars / json.result.length;
-              if (!isNaN(avg) && avg > 0) {
-                setAudiobooksProgress((prev: any) => {
-                  if (prev[book.id]?.audiobook_rating > 0) return prev;
-                  const existing = prev[book.id] || {};
-                  // Persist to dedicated ratings cache (survives tab switches)
-                  upsertRatingCacheDB(db, book.id, Math.round(avg * 100) / 100);
-                  // Also update progress table if book already exists there
-                  updateAudiobookRatingDB(db, book.id, Math.round(avg * 100) / 100);
-                  return {
-                    ...prev,
-                    [book.id]: {
-                      ...existing,
-                      audiobook_id: book.id,
-                      audiobook_rating: avg,
-                      audiotrack_progress_bars:
-                        existing.audiotrack_progress_bars ??
-                        JSON.stringify(new Array(book.num_sections).fill(0)),
-                      current_audiotrack_positions:
-                        existing.current_audiotrack_positions ??
-                        JSON.stringify(new Array(book.num_sections).fill(0)),
-                      audiobook_shelved: existing.audiobook_shelved ?? false,
-                    },
-                  };
-                });
+    const task = InteractionManager.runAfterInteractions(() => {
+      books.forEach((book: any, index: number) => {
+        if (!reviewURLS[index]) return;
+        const t = setTimeout(() => {
+          fetch(reviewURLS[index])
+            .then((r) => r.json())
+            .then((json) => {
+              setRatingsFetched((prev) => new Set([...prev, book.id]));
+              if (json?.result?.length > 0) {
+                const stars = json.result.reduce(
+                  (sum: number, r: any) => sum + Number(r.stars), 0
+                );
+                const avg = stars / json.result.length;
+                if (!isNaN(avg) && avg > 0) {
+                  setAudiobooksProgress((prev: any) => {
+                    if (prev[book.id]?.audiobook_rating > 0) return prev;
+                    const existing = prev[book.id] || {};
+                    upsertRatingCacheDB(db, book.id, Math.round(avg * 100) / 100);
+                    updateAudiobookRatingDB(db, book.id, Math.round(avg * 100) / 100);
+                    return {
+                      ...prev,
+                      [book.id]: {
+                        ...existing,
+                        audiobook_id: book.id,
+                        audiobook_rating: avg,
+                        audiotrack_progress_bars:
+                          existing.audiotrack_progress_bars ??
+                          JSON.stringify(new Array(book.num_sections).fill(0)),
+                        current_audiotrack_positions:
+                          existing.current_audiotrack_positions ??
+                          JSON.stringify(new Array(book.num_sections).fill(0)),
+                        audiobook_shelved: existing.audiobook_shelved ?? false,
+                      },
+                    };
+                  });
+                }
               }
-            }
-          })
-          .catch(() => {});
-      }, index * 500);
-      timeouts.push(t);
+            })
+            .catch(() => {
+              setRatingsFetched((prev) => new Set([...prev, book.id]));
+            });
+        }, index * 50);
+        timeouts.push(t);
+      });
     });
-    return () => timeouts.forEach(clearTimeout);
+    return () => {
+      task.cancel();
+      timeouts.forEach(clearTimeout);
+    };
   }, [reviewURLS]);
 
   const navigation = useNavigation();
@@ -315,7 +323,7 @@ export default function ExploreShelf(props: any) {
   const windowHeight = Dimensions.get("window").height;
   const resizeCoverImageHeight = windowHeight / 5;
   const resizeCoverImageWidth = windowWidth / 2 - 42;
-  const keyExtractor = (item: any, index: number) => item?.id;
+  const keyExtractor = (item: any, index: number) => String(item?.id ?? index);
   const renderItem = ({ item, index }) => (
     <View>
       <AudiobookCover
@@ -342,6 +350,8 @@ export default function ExploreShelf(props: any) {
           readonly={true}
           tintColor={Colors[colorScheme].ratingBackgroundColor}
         />
+      ) : ratingsFetched.has(item?.id) ? (
+        <Text style={styles.noRatingText}>No rating</Text>
       ) : null}
       <AudiobookAccordionList
         accordionTitle={item?.title}
@@ -402,5 +412,11 @@ const styles = StyleSheet.create({
   },
   ActivityIndicatorStyle: {
     top: windowHeight / 2 - 90,
+  },
+  noRatingText: {
+    textAlign: "center",
+    fontSize: 11,
+    color: "#999",
+    paddingVertical: 2,
   },
 });
