@@ -1,0 +1,78 @@
+diff --git a/node_modules/react-native-tab-view/lib/commonjs/TabBar.js b/node_modules/react-native-tab-view/lib/commonjs/TabBar.js
+index 9479ff6..7d53920 100644
+--- a/node_modules/react-native-tab-view/lib/commonjs/TabBar.js
++++ b/node_modules/react-native-tab-view/lib/commonjs/TabBar.js
+@@ -246,8 +246,8 @@ function TabBar(_ref9) {
+       item: route,
+       index
+     } = _ref10;
++    const _itemKey = route.key;
+     const props = {
+-      key: route.key,
+       position: position,
+       route: route,
+       navigationState: navigationState,
+@@ -303,7 +303,7 @@ function TabBar(_ref9) {
+       defaultTabWidth: !isWidthDynamic ? getComputedTabWidth(index, layout, routes, scrollEnabled, tabWidths, getFlattenedTabWidth(tabStyle)) : undefined,
+       android_ripple
+     };
+-    return /*#__PURE__*/React.createElement(React.Fragment, null, gap > 0 && index > 0 ? /*#__PURE__*/React.createElement(Separator, {
++    return /*#__PURE__*/React.createElement(React.Fragment, {key: _itemKey}, gap > 0 && index > 0 ? /*#__PURE__*/React.createElement(Separator, {
+       width: gap
+     }) : null, renderTabBarItem ? renderTabBarItem(props) : /*#__PURE__*/React.createElement(_TabBarItem.TabBarItem, props));
+   }, [activeColor, android_ripple, gap, getAccessibilityLabel, getAccessible, getLabelText, getTestID, inactiveColor, isWidthDynamic, jumpTo, labelStyle, layout, navigationState, onTabLongPress, onTabPress, position, pressColor, pressOpacity, renderBadge, renderIcon, renderLabel, renderTabBarItem, routes, scrollEnabled, tabStyle, tabWidths]);
+diff --git a/node_modules/react-native-tab-view/lib/module/TabBar.js b/node_modules/react-native-tab-view/lib/module/TabBar.js
+index 2714896..7c3741d 100644
+--- a/node_modules/react-native-tab-view/lib/module/TabBar.js
++++ b/node_modules/react-native-tab-view/lib/module/TabBar.js
+@@ -237,8 +237,8 @@ export function TabBar(_ref9) {
+       item: route,
+       index
+     } = _ref10;
++    const _itemKey = route.key;
+     const props = {
+-      key: route.key,
+       position: position,
+       route: route,
+       navigationState: navigationState,
+@@ -294,7 +294,7 @@ export function TabBar(_ref9) {
+       defaultTabWidth: !isWidthDynamic ? getComputedTabWidth(index, layout, routes, scrollEnabled, tabWidths, getFlattenedTabWidth(tabStyle)) : undefined,
+       android_ripple
+     };
+-    return /*#__PURE__*/React.createElement(React.Fragment, null, gap > 0 && index > 0 ? /*#__PURE__*/React.createElement(Separator, {
++    return /*#__PURE__*/React.createElement(React.Fragment, {key: _itemKey}, gap > 0 && index > 0 ? /*#__PURE__*/React.createElement(Separator, {
+       width: gap
+     }) : null, renderTabBarItem ? renderTabBarItem(props) : /*#__PURE__*/React.createElement(TabBarItem, props));
+   }, [activeColor, android_ripple, gap, getAccessibilityLabel, getAccessible, getLabelText, getTestID, inactiveColor, isWidthDynamic, jumpTo, labelStyle, layout, navigationState, onTabLongPress, onTabPress, position, pressColor, pressOpacity, renderBadge, renderIcon, renderLabel, renderTabBarItem, routes, scrollEnabled, tabStyle, tabWidths]);
+diff --git a/node_modules/react-native-tab-view/src/TabBar.tsx b/node_modules/react-native-tab-view/src/TabBar.tsx
+index e8d0b4c..a241ab3 100644
+--- a/node_modules/react-native-tab-view/src/TabBar.tsx
++++ b/node_modules/react-native-tab-view/src/TabBar.tsx
+@@ -364,8 +364,8 @@ export function TabBar<T extends Route>({
+ 
+   const renderItem = React.useCallback(
+     ({ item: route, index }: ListRenderItemInfo<T>) => {
+-      const props: TabBarItemProps<T> & { key: string } = {
+-        key: route.key,
++      const itemKey = route.key;
++      const props: TabBarItemProps<T> = {
+         position: position,
+         route: route,
+         navigationState: navigationState,
+@@ -443,14 +443,14 @@ export function TabBar<T extends Route>({
+       };
+ 
+       return (
+-        <>
++        <React.Fragment key={itemKey}>
+           {gap > 0 && index > 0 ? <Separator width={gap} /> : null}
+           {renderTabBarItem ? (
+             renderTabBarItem(props)
+           ) : (
+             <TabBarItem {...props} />
+           )}
+-        </>
++        </React.Fragment>
+       );
+     },
+     [

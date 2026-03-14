@@ -24,6 +24,7 @@ import Bookshelf from "../screens/Bookshelf";
 import Settings from "../screens/Settings";
 import Explore from "../screens/Explore";
 import * as NavigationBar from "expo-navigation-bar";
+import { isEdgeToEdge } from "react-native-is-edge-to-edge";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import {
   audiobookHistoryTableName,
@@ -37,9 +38,11 @@ export default function Navigation({
 }: {
   colorScheme: ColorSchemeName;
 }) {
-  NavigationBar.setBackgroundColorAsync(
-    Colors[colorScheme].statusBarBackground
-  );
+  if (!isEdgeToEdge()) {
+    NavigationBar.setBackgroundColorAsync(
+      Colors[colorScheme ?? "dark"].statusBarBackground
+    ).catch(() => {});
+  }
   return (
     <NavigationContainer
       linking={LinkingConfiguration}
