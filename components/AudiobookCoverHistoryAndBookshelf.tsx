@@ -124,6 +124,20 @@ export default function AudiobookCover(props) {
   const isCurrentlyPlaying =
     audio.currentBook?.audioBookId === item?.audiobook_id && audio.isPlaying;
 
+  const formatTime = (seconds: number): string => {
+    if (!seconds || isNaN(seconds) || seconds <= 0) return '0:00';
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = Math.floor(seconds % 60);
+    if (h > 0) return `${h}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+    return `${m}:${String(s).padStart(2, '0')}`;
+  };
+
+  const progressPercent = audiobooksProgress[item?.audiobook_id]?.listening_progress_percent || 0;
+  const totalSecs = item?.audiobook_total_time_secs || 0;
+  const currentTimeSecs = progressPercent * totalSecs;
+  const rating = audiobooksProgress[item?.audiobook_id]?.audiobook_rating;
+
   if (displayMode === 'list') {
     return (
       <View
@@ -152,15 +166,25 @@ export default function AudiobookCover(props) {
             </Text>
             <LinearProgress
               color={Colors[colorScheme].audiobookProgressColor}
-              value={audiobooksProgress[item.audiobook_id]?.listening_progress_percent}
+              value={progressPercent}
               variant="determinate"
               trackColor={Colors[colorScheme].audiobookProgressTrackColor}
               animation={false}
               style={{ marginTop: 4 }}
             />
-            <Text style={[styles.listDuration, { color: Colors[colorScheme].text }]}>
-              {item?.audiobook_total_time}
-            </Text>
+            <View style={styles.listTimeRow}>
+              <Text style={[styles.listTimeText, { color: Colors[colorScheme].text }]}>
+                {formatTime(currentTimeSecs)}
+              </Text>
+              {rating > 0 && (
+                <Text style={[styles.listRatingText, { color: Colors[colorScheme].text }]}>
+                  ★ {Number(rating).toFixed(1)}
+                </Text>
+              )}
+              <Text style={[styles.listTimeText, { color: Colors[colorScheme].text }]}>
+                {item?.audiobook_total_time}
+              </Text>
+            </View>
           </View>
         </Pressable>
         <View style={styles.listActions}>
@@ -354,6 +378,20 @@ const styles = StyleSheet.create({
     fontSize: 10,
     opacity: 0.7,
     marginTop: 2,
+  },
+  listTimeRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 2,
+  },
+  listTimeText: {
+    fontSize: 10,
+    opacity: 0.8,
+  },
+  listRatingText: {
+    fontSize: 10,
+    opacity: 0.9,
   },
   listActions: {
     flexDirection: "column",

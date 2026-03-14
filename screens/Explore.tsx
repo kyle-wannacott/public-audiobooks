@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { SearchBar, Overlay } from "@rneui/themed";
 import Slider from "@react-native-community/slider";
 import ExploreShelf from "../components/ExploreShelf";
-import { View, Dimensions, Text, FlatList } from "react-native";
+import { View, Dimensions, Text, Switch, FlatList } from "react-native";
 import { StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getAsyncData, storeAsyncData } from "../db/database_functions";
@@ -27,6 +27,7 @@ export default function Explore(props: any) {
   let amountOfAudiobooks = 64;
   const [audiobookAmountRequested, setAudiobooksAmountRequested] =
     useState(amountOfAudiobooks);
+  const [infiniteBooks, setInfiniteBooksState] = useState(false);
   const [loadingAudiobookAmount, setLoadingAudiobookAmount] = useState(false);
   const [gettingAverageReview, setGettingAverageReview] = useState(false);
   const [genreFuse, setGenreFuse] = useState<Fuse>("");
@@ -48,6 +49,9 @@ export default function Explore(props: any) {
             : setAudiobooksAmountRequested(amountOfAudiobooks);
         }
       );
+      getAsyncData("infiniteBooks").then((val) => {
+        if (val !== null && val !== undefined) setInfiniteBooksState(val);
+      });
       switch (searchBy) {
         case "title":
           getAsyncData("userSearchTitle").then((userSearchTitleRetrieved) => {
@@ -88,6 +92,11 @@ export default function Explore(props: any) {
   function setAndStoreAudiobookAmountRequested(amount: number) {
     setAudiobooksAmountRequested(amount);
     storeAsyncData("audiobookAmountRequested", amount);
+  }
+
+  function toggleInfiniteBooks(val: boolean) {
+    setInfiniteBooksState(val);
+    storeAsyncData("infiniteBooks", val);
   }
 
   const storeSearchText = (searchType: string, userInput: string) => {
@@ -335,39 +344,45 @@ export default function Explore(props: any) {
             backgroundColor: Colors[colorScheme].overlayBackgroundColor,
           }}
         >
-          <View style={styles.checkboxRow}>
+          {/* Infinite books toggle */}
+          <View style={[styles.checkboxRow, { justifyContent: 'space-between', marginBottom: 8 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
-              Audiobooks requested per search: {audiobookAmountRequested}.
+              Infinite audiobooks per search
+            </Text>
+            <Switch
+              value={infiniteBooks}
+              onValueChange={toggleInfiniteBooks}
+              trackColor={{ false: currentColorScheme.sliderTrackColor, true: currentColorScheme.audiobookProgressColor }}
+              thumbColor={currentColorScheme.sliderThumbColor}
+            />
+          </View>
+
+          {/* Per-search amount (disabled when infinite) */}
+          <View style={[styles.checkboxRow, { opacity: infiniteBooks ? 0.4 : 1 }]}>
+            <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
+              Audiobooks per search: {infiniteBooks ? '∞' : audiobookAmountRequested}
             </Text>
           </View>
           <View
             style={{
-              display: "flex",
               flexDirection: "row",
               alignItems: "center",
               justifyContent: "center",
+              opacity: infiniteBooks ? 0.4 : 1,
             }}
+            pointerEvents={infiniteBooks ? 'none' : 'auto'}
           >
             <Button
               accessibilityLabel="Decrease audiobooks requested per search."
-              accessibilityHint={`Currently: ${audiobookAmountRequested} requested`}
               onPress={() =>
                 audiobookAmountRequested >= 6
-                  ? setAndStoreAudiobookAmountRequested(
-                      audiobookAmountRequested - 5
-                    )
+                  ? setAndStoreAudiobookAmountRequested(audiobookAmountRequested - 5)
                   : undefined
               }
               mode={Colors[colorScheme].buttonMode}
-              style={{
-                backgroundColor: Colors[colorScheme].buttonBackgroundColor,
-              }}
+              style={{ backgroundColor: Colors[colorScheme].buttonBackgroundColor }}
             >
-              <MaterialCommunityIcons
-                name="minus"
-                size={30}
-                color={Colors[colorScheme].buttonIconColor}
-              />
+              <MaterialCommunityIcons name="minus" size={30} color={Colors[colorScheme].buttonIconColor} />
             </Button>
             <Slider
               value={audiobookAmountRequested}
@@ -376,41 +391,25 @@ export default function Explore(props: any) {
               onValueChange={setAndStoreAudiobookAmountRequested}
               step={1}
               style={{ width: 180, height: 40, margin: 10 }}
-              trackStyle={{
-                height: 10,
-                backgroundColor: Colors[colorScheme].sliderTrackColor,
-              }}
-              thumbStyle={{
-                height: 12,
-                width: 12,
-                backgroundColor: Colors[colorScheme].sliderThumbColor,
-              }}
+              trackStyle={{ height: 10, backgroundColor: Colors[colorScheme].sliderTrackColor }}
+              thumbStyle={{ height: 12, width: 12, backgroundColor: Colors[colorScheme].sliderThumbColor }}
             />
             <Button
               accessibilityLabel="Increase audiobooks requested per search."
-              accessibilityHint={`Currently ${audiobookAmountRequested} requested`}
               onPress={() =>
                 audiobookAmountRequested <= 415
-                  ? setAndStoreAudiobookAmountRequested(
-                      audiobookAmountRequested + 5
-                    )
+                  ? setAndStoreAudiobookAmountRequested(audiobookAmountRequested + 5)
                   : undefined
               }
               mode={Colors[colorScheme].buttonMode}
-              style={{
-                backgroundColor: Colors[colorScheme].buttonBackgroundColor,
-              }}
+              style={{ backgroundColor: Colors[colorScheme].buttonBackgroundColor }}
             >
-              <MaterialCommunityIcons
-                name="plus"
-                size={30}
-                color={Colors[colorScheme].buttonIconColor}
-              />
+              <MaterialCommunityIcons name="plus" size={30} color={Colors[colorScheme].buttonIconColor} />
             </Button>
           </View>
 
           {/* Display mode toggle */}
-          <View style={styles.checkboxRow}>
+          <View style={[styles.checkboxRow, { marginTop: 8 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text, marginRight: 8 }}>
               Display:
             </Text>
@@ -419,7 +418,7 @@ export default function Explore(props: any) {
               onPress={() => setBookDisplayMode('grid')}
               style={{ marginRight: 8 }}
               contentStyle={{ height: 36 }}
-              labelStyle={{ fontSize: 12 }}
+              textColor={bookDisplayMode === 'grid' ? '#fff' : currentColorScheme.text}
             >
               <MaterialCommunityIcons
                 name="view-grid"
@@ -432,7 +431,7 @@ export default function Explore(props: any) {
               mode={bookDisplayMode === 'list' ? 'contained' : 'outlined'}
               onPress={() => setBookDisplayMode('list')}
               contentStyle={{ height: 36 }}
-              labelStyle={{ fontSize: 12 }}
+              textColor={bookDisplayMode === 'list' ? '#fff' : currentColorScheme.text}
             >
               <MaterialCommunityIcons
                 name="view-list"
@@ -467,7 +466,7 @@ export default function Explore(props: any) {
           setLoadingAudiobookAmount={setLoadingAudiobookAmount}
           searchBarInputSubmitted={userInputEntered}
           searchBarCurrentText={search}
-          requestAudiobookAmount={audiobookAmountRequested}
+          requestAudiobookAmount={infiniteBooks ? 0 : audiobookAmountRequested}
         />
       </View>
     </View>

@@ -15,7 +15,8 @@ import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
 import { useAudio } from "../hooks/AudioContext";
 
-const { width: windowWidth } = Dimensions.get("window");
+const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
+const BOTTOM_PADDING = Math.round(windowHeight * 0.012); // ~9px on 720p, ~11px on 900p
 
 export default function MiniPlayer() {
   const colorScheme = useColorScheme();
@@ -27,7 +28,7 @@ export default function MiniPlayer() {
   }
 
   const colors = Colors[colorScheme];
-  const controlSize = 24;
+  const controlSize = Math.round(windowWidth * 0.065); // ~24px on 375px wide, scales up
 
   const GetDurationFormat = (ms: number) => {
     if (typeof ms !== "number" || isNaN(ms)) return "0:00";
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 8,
     paddingTop: 4,
+    paddingBottom: BOTTOM_PADDING,
     borderTopWidth: 1,
     borderTopColor: "rgba(128,128,128,0.3)",
   },
@@ -201,8 +203,8 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
   coverImage: {
-    width: 40,
-    height: 40,
+    width: Math.round(windowWidth * 0.1),
+    height: Math.round(windowWidth * 0.1),
     borderRadius: 4,
     marginRight: 8,
   },
@@ -210,11 +212,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   titleText: {
-    fontSize: 13,
+    fontSize: Math.round(windowWidth * 0.034),
     fontWeight: "bold",
   },
   subtitleText: {
-    fontSize: 11,
+    fontSize: Math.round(windowWidth * 0.028),
   },
   sliderRow: {
     marginBottom: 0,
@@ -235,6 +237,6 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     alignItems: "center",
-    height: 36,
+    height: Math.round(windowHeight * 0.05),
   },
 });
