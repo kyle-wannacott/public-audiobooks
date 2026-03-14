@@ -4,6 +4,8 @@ import { Button } from "react-native-paper";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
 
+const { height: windowHeight } = Dimensions.get("window");
+
 function AudioTrackControls(props: any) {
   const colorScheme = useColorScheme();
   const controlPanelButtonSize = 30;
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   controlsVert: {
-    height: 60,
+    height: Math.max(56, windowHeight * 0.075),
   },
   ActivityIndicatorContainer: {
     width: 64,

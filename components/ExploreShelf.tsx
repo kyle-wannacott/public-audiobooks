@@ -118,7 +118,7 @@ export default function ExploreShelf(props: any) {
     const carot = encodeURIComponent("^");
     // fields removed: sections(adds to loading time), description(not url decoded),translators.
     const fields =
-      "id,title,url_text_source,language,copyright_year,num_sections,url_rss,url_zip_file,url_project,url_librivox,url_iarchive,url_other,totaltime,totaltimesecs,authors,genres";
+      "id,title,url_text_source,language,copyright_year,num_sections,url_rss,url_zip_file,url_project,url_librivox,url_iarchive,url_other,totaltime,totaltimesecs,authors,genres,coverart_jpg,coverart_thumbnail";
     let apiFetchQuery;
     switch (searchBy) {
       case "recent":
@@ -126,22 +126,22 @@ export default function ExploreShelf(props: any) {
           // TODO: Add a range slider for period of time; currently is for past month...
           (new Date().getTime() - 30 * 24 * 60 * 60 * 1000) / 1000;
         apiFetchQuery = encodeURI(
-          `${librivoxAudiobooksAPI}/?since=${oneMonthsAgoInUnixTime}&fields={${fields}}&extended=1&format=json&limit=${amountOfAudiobooks}`
+          `${librivoxAudiobooksAPI}/?since=${oneMonthsAgoInUnixTime}&fields={${fields}}&extended=1&coverart=1&format=json&limit=${amountOfAudiobooks}`
         );
         break;
       case "title":
         apiFetchQuery = encodeURI(
-          `${librivoxAudiobooksAPI}/?title=${carot}${searchQuery}&fields={${fields}}&extended=1&format=json&limit=${amountOfAudiobooks}`
+          `${librivoxAudiobooksAPI}/?title=${carot}${searchQuery}&fields={${fields}}&extended=1&coverart=1&format=json&limit=${amountOfAudiobooks}`
         );
         break;
       case "author":
         apiFetchQuery = encodeURI(
-          `${librivoxAudiobooksAPI}/?author=${searchQuery}&fields={${fields}}&extended=1&format=json&limit=${amountOfAudiobooks}`
+          `${librivoxAudiobooksAPI}/?author=${searchQuery}&fields={${fields}}&extended=1&coverart=1&format=json&limit=${amountOfAudiobooks}`
         );
         break;
       case "genre":
         apiFetchQuery = encodeURI(
-          `${librivoxAudiobooksAPI}/?genre=${searchQuery}&fields={${fields}}&extended=1&format=json&limit=${amountOfAudiobooks}`
+          `${librivoxAudiobooksAPI}/?genre=${searchQuery}&fields={${fields}}&extended=1&coverart=1&format=json&limit=${amountOfAudiobooks}`
         );
         break;
       default:
@@ -195,17 +195,26 @@ export default function ExploreShelf(props: any) {
   useEffect(() => {
     if (data.books) {
       const dataKeys = Object.values(data.books);
-      let bookCoverImagePath;
-      dataKeys.forEach((bookCoverURLPath: any) => {
-        bookCoverImagePath = bookCoverURLPath.url_zip_file.split("/");
-        bookCoverImagePath = bookCoverImagePath[bookCoverImagePath.length - 2];
+      dataKeys.forEach((book: any) => {
+        // Use the new LibriVox coverart API field if available; fall back to archive.org image service
+        let coverUrl: string;
+        if (book.coverart_thumbnail) {
+          coverUrl = book.coverart_thumbnail;
+        } else if (book.coverart_jpg) {
+          coverUrl = book.coverart_jpg;
+        } else {
+          const pathParts = book.url_zip_file.split("/");
+          const identifier = pathParts[pathParts.length - 2];
+          coverUrl = encodeURI(
+            `https://archive.org/services/get-item-image.php?identifier=${identifier}`
+          );
+        }
+        const pathParts = book.url_zip_file.split("/");
+        const identifier = pathParts[pathParts.length - 2];
         const reviewUrl = encodeURI(
-          `https://archive.org/metadata/${bookCoverImagePath}/reviews/`
+          `https://archive.org/metadata/${identifier}/reviews/`
         );
-        bookCoverImagePath = encodeURI(
-          `https://archive.org/services/get-item-image.php?identifier=${bookCoverImagePath}`
-        );
-        bookCoverURL.push(bookCoverImagePath);
+        bookCoverURL.push(coverUrl);
         reviewsURL.push(reviewUrl);
       });
       setBookCovers(bookCoverURL);

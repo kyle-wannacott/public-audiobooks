@@ -14,6 +14,7 @@ import AudiotrackSliderWithCurrentPlaying from "../components/AudiotrackSliderWi
 import MakeUserReview from "../components/audioTrackMakeReview";
 // import getAverageAudiobookReview from "../screens/Explore";
 
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { openDatabase, roundNumberTwoDecimal } from "../db/utils";
 import { useNavigation } from "@react-navigation/native";
 import useColorScheme from "../hooks/useColorScheme";
@@ -113,6 +114,7 @@ function Audiotracks(props: any) {
 
   const navigation = useNavigation();
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   React.useLayoutEffect(() => {
     try {
@@ -1210,13 +1212,15 @@ function Audiotracks(props: any) {
           >
             <SectionList
               sections={AudioTracksScreenData}
-              keyExtractor={({ section: { keyExtractor } }) => {
-                keyExtractor;
-              }}
+              keyExtractor={(item: any, index: number) =>
+                String(item?.id ?? item?.createdate ?? index)
+              }
               initialNumToRender={25}
               maxToRenderPerBatch={50}
               updateCellsBatchingPeriod={50}
-              renderItem={({ section: { renderItem } }) => renderItem}
+              renderItem={({ item, index, section }: any) =>
+                section.renderItem({ item, index })
+              }
               ListHeaderComponent={getHeader()}
               renderSectionHeader={({
                 section: { title },
@@ -1240,37 +1244,39 @@ function Audiotracks(props: any) {
           </View>
         </View>
 
-        <AudiotrackSliderWithCurrentPlaying
-          currentSliderPosition={currentSliderPosition}
-          SeekUpdate={updateAudiotrackSlider}
-          GetDurationFormat={GetDurationFormat}
-          Duration={currentAudiotrackPlaying.duration}
-          coverImage={coverImage}
-          audioTrackChapterPlayingTitle={
-            currentAudiotrackPlaying.audioTrackChapterPlayingTitle
-          }
-          audioTrackReader={currentAudiotrackPlaying.audioTrackReader}
-        />
+        <View style={{ paddingBottom: insets.bottom }}>
+          <AudiotrackSliderWithCurrentPlaying
+            currentSliderPosition={currentSliderPosition}
+            SeekUpdate={updateAudiotrackSlider}
+            GetDurationFormat={GetDurationFormat}
+            Duration={currentAudiotrackPlaying.duration}
+            coverImage={coverImage}
+            audioTrackChapterPlayingTitle={
+              currentAudiotrackPlaying.audioTrackChapterPlayingTitle
+            }
+            audioTrackReader={currentAudiotrackPlaying.audioTrackReader}
+          />
 
-        <AudioTrackControls
-          HandlePrevTrack={HandlePrevTrack}
-          HandleNextTrack={HandleNextTrack}
-          LoadAudio={LoadAudio}
-          PlayAudio={PlayAudio}
-          isPlaying={isPlaying}
-          PauseAudio={PauseAudio}
-          isAudioPaused={isAudioPaused}
-          loadingCurrentAudiotrack={
-            audiotrackLoadingStatuses.loadingCurrentAudiotrack
-          }
-          loadedCurrentAudiotrack={
-            audiotrackLoadingStatuses.loadedCurrentAudiotrack
-          }
-          currentAudioTrackIndex={currentAudioTrackIndex}
-          forwardTenSeconds={forwardTenSeconds}
-          rewindTenSeconds={rewindTenSeconds}
-          trackPositions={audiotracksData}
-        ></AudioTrackControls>
+          <AudioTrackControls
+            HandlePrevTrack={HandlePrevTrack}
+            HandleNextTrack={HandleNextTrack}
+            LoadAudio={LoadAudio}
+            PlayAudio={PlayAudio}
+            isPlaying={isPlaying}
+            PauseAudio={PauseAudio}
+            isAudioPaused={isAudioPaused}
+            loadingCurrentAudiotrack={
+              audiotrackLoadingStatuses.loadingCurrentAudiotrack
+            }
+            loadedCurrentAudiotrack={
+              audiotrackLoadingStatuses.loadedCurrentAudiotrack
+            }
+            currentAudioTrackIndex={currentAudioTrackIndex}
+            forwardTenSeconds={forwardTenSeconds}
+            rewindTenSeconds={rewindTenSeconds}
+            trackPositions={audiotracksData}
+          ></AudioTrackControls>
+        </View>
       </View>
     );
   } else {
