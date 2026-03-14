@@ -83,7 +83,7 @@ export default function MiniPlayer() {
         <View style={styles.controlsRow}>
           <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 6, marginHorizontal: 3 }}>
             <Button mode="text" compact onPress={() => audio.handlePrevTrack()} style={styles.ctrlBtn}>
-              <MaterialIcons name="skip-previous" size={controlSize} color={colors.buttonIconColor} />
+              <MaterialIcons name="skip-previous" size={controlSize + 4} color={colors.buttonIconColor} />
             </Button>
           </View>
           {audio.isLoading ? null : (
@@ -113,7 +113,7 @@ export default function MiniPlayer() {
           )}
           <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 6, marginHorizontal: 3 }}>
             <Button mode="text" compact onPress={() => audio.handleNextTrack()} style={styles.ctrlBtn}>
-              <MaterialIcons name="skip-next" size={controlSize} color={colors.buttonIconColor} />
+              <MaterialIcons name="skip-next" size={controlSize + 4} color={colors.buttonIconColor} />
             </Button>
           </View>
         </View>
