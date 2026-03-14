@@ -100,13 +100,12 @@ export default function AudiobookCover(props) {
               if (audiobooksProgress[item?.id]) {
                 const isShelved =
                   audiobooksProgress[item?.id]?.audiobook_shelved;
-                const audiobookItem = audiobooksProgress[audiobook_id];
-                audiobookItem.audiobook_shelved = !isShelved;
                 updateIfBookShelvedDB(db, audiobook_id, !isShelved);
-                setAudiobooksProgress((audiobooksProgress) => ({
-                  ...audiobooksProgress,
-                  audiobook_id: {
-                    audiobookItem,
+                setAudiobooksProgress((prev: any) => ({
+                  ...prev,
+                  [audiobook_id]: {
+                    ...prev[audiobook_id],
+                    audiobook_shelved: !isShelved,
                   },
                 }));
                 addAudiobookToHistory(index, item);
@@ -115,29 +114,37 @@ export default function AudiobookCover(props) {
                 let initialAudioBookSections = new Array(
                   item?.num_sections
                 ).fill(0);
+                const initAudioBookData = {
+                  audiobook_id: item?.id,
+                  audiotrack_progress_bars: JSON.stringify(
+                    initialAudioBookSections
+                  ),
+                  current_audiotrack_positions: JSON.stringify(
+                    initialAudioBookSections
+                  ),
+                  audiobook_shelved: true,
+                  audiobook_rating: undefined,
+                };
+                // Store immediately so the star updates right away
+                initialAudioBookProgressStoreDB(db, initAudioBookData);
+                setAudiobooksProgress((prev: any) => ({
+                  ...prev,
+                  [item?.id]: initAudioBookData,
+                }));
+                // Then update rating in background when fetch resolves
                 getAverageAudiobookReview(index)
-                  .then((avgReview) => {
-                    const initAudioBookData = {
-                      audiobook_id: item?.id,
-                      audiotrack_progress_bars: JSON.stringify(
-                        initialAudioBookSections
-                      ),
-                      current_audiotrack_positions: JSON.stringify(
-                        initialAudioBookSections
-                      ),
-                      audiobook_shelved: true,
-                      audiobook_rating: avgReview,
-                    };
-                    audiobooksProgress[item?.id] = initAudioBookData;
-                    setAudiobooksProgress((audiobooksProgress) => ({
-                      ...audiobooksProgress,
-                      audiobook_id: {
-                        initAudioBookData,
-                      },
-                    }));
-                    initialAudioBookProgressStoreDB(db, initAudioBookData);
+                  ?.then((avgReview: any) => {
+                    if (avgReview) {
+                      setAudiobooksProgress((prev: any) => ({
+                        ...prev,
+                        [item?.id]: {
+                          ...(prev[item?.id] || initAudioBookData),
+                          audiobook_rating: avgReview,
+                        },
+                      }));
+                    }
                   })
-                  .catch((error) => console.error(error));
+                  .catch((error: any) => console.error(error));
               }
             }}
             style={{

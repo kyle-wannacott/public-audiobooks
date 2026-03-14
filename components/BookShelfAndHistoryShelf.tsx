@@ -138,21 +138,18 @@ export default function BookShelfAndHistoryShelf(props: any) {
         resizeCoverImageHeight={resizeCoverImageHeight}
         windowWidth={windowWidth}
         windowHeight={windowHeight}
+        onAfterShelveToggle={() => props.getShelvedBooks(pickerAndQueryState)}
       />
-      {(audiobooksProgress[item.audiobook_id]?.audiobook_rating > 0 ||
-        pickerAndQueryState.pickerIndex === 2) &&
-      audiobooksProgress[item.audiobook_id] ? (
+      {audiobooksProgress[item.audiobook_id]?.audiobook_rating > 0 ? (
         <Rating
           showRating={false}
           imageSize={20}
           ratingCount={5}
-          startingValue={
-            audiobooksProgress[item.audiobook_id]?.audiobook_rating ?? 0
-          }
+          startingValue={audiobooksProgress[item.audiobook_id]?.audiobook_rating}
           readonly={true}
           tintColor={Colors[colorScheme].ratingBackgroundColor}
         />
-      ) : ratingsCache[item.audiobook_id]?.hasRating === false ? (
+      ) : audiobooksProgress[item.audiobook_id] ? (
         <Text style={styles.noRatingText}>No rating</Text>
       ) : undefined}
       <AudiobookAccordionList

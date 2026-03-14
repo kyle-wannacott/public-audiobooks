@@ -8,7 +8,6 @@ import {
   InteractionManager,
 } from "react-native";
 import { Rating } from "react-native-ratings";
-import { LinearProgress } from "@rneui/themed";
 import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
 import { Audiobook, Review } from "../types.js";
@@ -59,16 +58,6 @@ const ExploreBookItem = React.memo(({
       windowWidth={windowWidth}
       windowHeight={windowHeight}
     />
-    {progress?.listening_progress_percent > 0 && (
-      <LinearProgress
-        color={Colors[colorScheme].audiobookProgressColor}
-        value={Number(progress.listening_progress_percent)}
-        variant="determinate"
-        trackColor={Colors[colorScheme].audiobookProgressTrackColor}
-        animation={false}
-        style={{ height: 6, marginBottom: 2 }}
-      />
-    )}
     {progress?.audiobook_rating > 0 ? (
       <Rating
         showRating={false}

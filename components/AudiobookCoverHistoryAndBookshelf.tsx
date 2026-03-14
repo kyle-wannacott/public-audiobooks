@@ -19,6 +19,7 @@ export default function AudiobookCover(props) {
     resizeCoverImageHeight,
     audiobooksProgress,
     setAudiobooksProgress,
+    onAfterShelveToggle,
   } = props;
   const colorScheme = useColorScheme();
   const navigation = useNavigation();
@@ -92,15 +93,15 @@ export default function AudiobookCover(props) {
               if (audiobooksProgress[item?.audiobook_id]) {
                 const isShelved =
                   audiobooksProgress[item?.audiobook_id]?.audiobook_shelved;
-                const audiobookItem = audiobooksProgress[audiobook_id];
-                audiobookItem.audiobook_shelved = !isShelved;
                 updateIfBookShelvedDB(db, audiobook_id, !isShelved);
-                setAudiobooksProgress((audiobooksProgress) => ({
-                  ...audiobooksProgress,
-                  audiobook_id: {
-                    audiobookItem,
+                setAudiobooksProgress((prev: any) => ({
+                  ...prev,
+                  [audiobook_id]: {
+                    ...prev[audiobook_id],
+                    audiobook_shelved: !isShelved,
                   },
                 }));
+                if (onAfterShelveToggle) onAfterShelveToggle();
               }
             }}
             style={{

@@ -707,16 +707,21 @@ function Audiotracks(props: any) {
       }}
     >
       <Button
-        accessibilityLabel={`Play from start of Audiotrack ${item?.section_number}: ${item?.title}`}
-        onPress={() => PlayFromStartOfTrack(index)}
-        style={{ margin: 0, padding: 0 }}
         mode={Colors[colorScheme].buttonMode}
         style={{
           backgroundColor: Colors[colorScheme].buttonBackgroundColor,
         }}
+        accessibilityLabel={`Resume playing ${item?.section_number}: ${
+          item?.title
+        } ${GetDurationFormat(
+          audiotracksData.currentAudiotrackPositionsMs[index]
+        )} out of ${FormatChapterDurations(chapters[index]?.playtime)}`}
+        onPress={() => {
+          PlayFromListenButton(index);
+        }}
       >
         <MaterialCommunityIcons
-          name="book-arrow-left"
+          name="book-play"
           size={30}
           color={Colors[colorScheme].buttonIconColor}
         />
@@ -792,21 +797,15 @@ function Audiotracks(props: any) {
         </View>
       </ListItem.Content>
       <Button
+        accessibilityLabel={`Play from start of Audiotrack ${item?.section_number}: ${item?.title}`}
+        onPress={() => PlayFromStartOfTrack(index)}
         mode={Colors[colorScheme].buttonMode}
         style={{
           backgroundColor: Colors[colorScheme].buttonBackgroundColor,
         }}
-        accessibilityLabel={`Resume playing ${item?.section_number}: ${
-          item?.title
-        } ${GetDurationFormat(
-          audiotracksData.currentAudiotrackPositionsMs[index]
-        )} out of ${FormatChapterDurations(chapters[index]?.playtime)}`}
-        onPress={() => {
-          PlayFromListenButton(index);
-        }}
       >
         <MaterialCommunityIcons
-          name="book-play"
+          name="book-arrow-left"
           size={30}
           color={Colors[colorScheme].buttonIconColor}
         />
@@ -1041,19 +1040,32 @@ function Audiotracks(props: any) {
               </Text>
             </Button>
 
-            <Rating
-              showRating
-              ratingCount={5}
-              startingValue={audiotracksData?.audiobookRating}
-              fractions={1}
-              readonly={true}
-              style={{
-                paddingVertical: 10,
-              }}
-              tintColor={Colors[colorScheme].reviewsRatingTintColor}
-              type="custom"
-              ratingBackgroundColor={Colors[colorScheme].reviewsRatingBGColor}
-            />
+            {audiotracksData?.audiobookRating > 0 ? (
+              <Rating
+                showRating
+                ratingCount={5}
+                startingValue={audiotracksData.audiobookRating}
+                fractions={1}
+                readonly={true}
+                style={{
+                  paddingVertical: 10,
+                }}
+                tintColor={Colors[colorScheme].reviewsRatingTintColor}
+                type="custom"
+                ratingBackgroundColor={Colors[colorScheme].reviewsRatingBGColor}
+              />
+            ) : (
+              <Text
+                style={{
+                  textAlign: "center",
+                  paddingVertical: 10,
+                  color: Colors[colorScheme].text,
+                  fontSize: 14,
+                }}
+              >
+                No rating
+              </Text>
+            )}
             <View style={styles.shelveButtons}></View>
           </Card>
         </View>
