@@ -3,7 +3,7 @@ import { ActivityIndicator, Dimensions, Image } from "react-native";
 import { ListItem, LinearProgress, Card } from "@rneui/themed";
 import { Rating } from "react-native-ratings";
 import * as rssParser from "react-native-rss-parser";
-import { Audio } from "expo-av";
+import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import { StyleSheet, Text, View, SectionList } from "react-native";
 import { MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 
@@ -85,9 +85,8 @@ function Audiotracks(props: any) {
   });
   const [audioModeSettings, setAudioModeSettings] = useState<any>({
     staysActiveInBackground: true,
-    interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DO_NOT_MIX,
     shouldDuckAndroid: true,
-    playThroughEarpieceAndroid: true,
+    playThroughEarpieceAndroid: false,
   });
 
   const {
@@ -243,18 +242,13 @@ function Audiotracks(props: any) {
 
   useEffect(() => {
     async function setAudioMode() {
-      // InterruptionModeAndroid[InterruptionModeAndroid["DoNotMix"] = 1] = "DoNotMix";
-      // InterruptionModeAndroid[InterruptionModeAndroid["DuckOthers"] = 2] = "DuckOthers";
       try {
-        await Audio.setAudioModeAsync({
-          allowsRecordingIOS: false,
-          interruptionModeIOS: 0,
-          playsInSilentModeIOS: true,
-          staysActiveInBackground: audioModeSettings.staysActiveInBackground,
-          interruptionModeAndroid: 2,
-          shouldDuckAndroid: audioModeSettings.shouldDuckAndroid,
-          playThroughEarpieceAndroid:
-            audioModeSettings.playThroughEarpieceAndroid,
+        await setAudioModeAsync({
+          playsInSilentMode: true,
+          shouldPlayInBackground: audioModeSettings.staysActiveInBackground,
+          interruptionMode: audioModeSettings.shouldDuckAndroid ? 'duckOthers' : 'doNotMix',
+          shouldRouteThroughEarpiece: audioModeSettings.playThroughEarpieceAndroid,
+          allowsRecording: false,
         });
       } catch (e) {
         console.log(e);
@@ -262,7 +256,8 @@ function Audiotracks(props: any) {
     }
     setAudioMode();
   }, [audioModeSettings]);
-  const sound = React.useRef(new Audio.Sound());
+  const sound = React.useRef(createAudioPlayer(null, { updateInterval: 1000 }));
+  const statusSubscription = useRef<any>(null);
 
   useEffect(() => {
     fetch(urlRss)
@@ -376,16 +371,17 @@ function Audiotracks(props: any) {
   }, []);
 
   useEffect(() => {
-    try {
-      return sound
-        ? () => {
-            sound.current.unloadAsync();
-          }
-        : undefined;
-    } catch (err) {
-      console.log(err);
-    }
-  }, [sound.current]);
+    return () => {
+      try {
+        if (statusSubscription.current) {
+          statusSubscription.current.remove();
+        }
+        sound.current.release();
+      } catch (err) {
+        console.log(err);
+      }
+    };
+  }, []);
 
   function sliderPositionCalculation(progress: number) {
     let sliderPositionCalculate = progress * 100;
@@ -432,8 +428,10 @@ function Audiotracks(props: any) {
 
   const UpdateStatus = async (data: any) => {
     try {
+      const positionMillis = data.currentTime * 1000;
+      const durationMillis = data.duration * 1000;
       if (data.didJustFinish) {
-        updateAndStoreAudiobookPositions(data);
+        updateAndStoreAudiobookPositions({ positionMillis, durationMillis });
         if (
           currentAudioTrackIndex.current >=
           URLSToPlayAudiotracks.length - 1
@@ -443,8 +441,8 @@ function Audiotracks(props: any) {
         } else {
           return HandleNextTrack();
         }
-      } else if (data.positionMillis && data.durationMillis) {
-        updateAndStoreAudiobookPositions(data);
+      } else if (positionMillis > 0 && durationMillis > 0) {
+        updateAndStoreAudiobookPositions({ positionMillis, durationMillis });
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -453,11 +451,10 @@ function Audiotracks(props: any) {
 
   const updateAudiotrackSlider = async (data: any) => {
     try {
-      const soundStatus = await sound.current.getStatusAsync();
-      if (soundStatus.isLoaded === true) {
-        const currentPosition =
-          (data / 100) * currentAudiotrackPlaying.duration;
-        await sound.current.setPositionAsync(currentPosition);
+      if (sound.current.isLoaded) {
+        const durationMs = sound.current.duration * 1000;
+        const currentPosition = (data / 100) * durationMs;
+        await sound.current.seekTo(currentPosition / 1000);
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -466,13 +463,12 @@ function Audiotracks(props: any) {
 
   const forwardTenSeconds = async () => {
     try {
-      const soundStatus = await sound.current.getStatusAsync();
-      if (soundStatus.isLoaded === true) {
+      if (sound.current.isLoaded) {
         const currentPosition =
           audiotracksData.currentAudiotrackPositionsMs[
             currentAudioTrackIndex.current
           ];
-        await sound.current.setPositionAsync(currentPosition + 10000);
+        await sound.current.seekTo((currentPosition + 10000) / 1000);
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -481,13 +477,12 @@ function Audiotracks(props: any) {
 
   const rewindTenSeconds = async () => {
     try {
-      const soundStatus = await sound.current.getStatusAsync();
-      if (soundStatus.isLoaded === true) {
+      if (sound.current.isLoaded) {
         const currentPosition =
           audiotracksData.currentAudiotrackPositionsMs[
             currentAudioTrackIndex.current
           ];
-        await sound.current.setPositionAsync(currentPosition - 10000);
+        await sound.current.seekTo(Math.max(0, currentPosition - 10000) / 1000);
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -496,11 +491,10 @@ function Audiotracks(props: any) {
 
   const ResetPlayer = async () => {
     try {
-      const soundStatus = await sound.current.getStatusAsync();
-      if (soundStatus.isLoaded === true) {
+      if (sound.current.isLoaded) {
         SetIsPlaying(false);
-        await sound.current.setPositionAsync(0);
-        await sound.current.stopAsync();
+        await sound.current.seekTo(0);
+        sound.current.pause();
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -514,70 +508,60 @@ function Audiotracks(props: any) {
       ...audiotrackLoadingStatuses,
       loadingCurrentAudiotrack: true,
     });
-    const checkLoading = await sound.current.getStatusAsync();
-    if (checkLoading.isLoaded === false) {
-      try {
-        const result = await sound.current.loadAsync(
-          { uri: URLSToPlayAudiotracks[index] },
-          {
-            progressUpdateIntervalMillis: 1000,
-            positionMillis: audiotrackPositions,
-            shouldPlay: audioPlayerSettings.shouldPlay,
-            rate: audioPlayerSettings.rate,
-            shouldCorrectPitch: audioPlayerSettings.shouldCorrectPitch,
-            volume: audioPlayerSettings.volume,
-            isMuted: audioPlayerSettings.isMuted,
-            isLooping: audioPlayerSettings.isLooping,
-          },
-          true
-        );
-        if (result.isLoaded === false) {
-          setAudiotrackLoadingStatuses({
-            ...audiotrackLoadingStatuses,
-            loadingCurrentAudiotrack: false,
-            loadedCurrentAudiotrack: false,
-          });
-        } else {
-          setCurrentAudiotrackPlaying({
-            ...currentAudiotrackPlaying,
-            audioTrackReader: chapters[index]?.readers[0]?.display_name,
-            audioTrackChapterPlayingTitle:
-              chapters[index]?.section_number + ". " + chapters[index]?.title,
-            duration: result?.durationMillis,
-          });
-          setAudiotrackLoadingStatuses({
-            ...audiotrackLoadingStatuses,
-            loadingCurrentAudiotrack: false,
-            loadedCurrentAudiotrack: true,
-          });
-          sound.current.setOnPlaybackStatusUpdate(UpdateStatus);
-          await PlayAudio();
-        }
-      } catch (error) {
-        setAudiotrackLoadingStatuses({
-          ...audiotrackLoadingStatuses,
-          loadingCurrentAudiotrack: false,
-          loadedCurrentAudiotrack: false,
-        });
-        console.log("Error: ", error);
+    try {
+      // Remove old listener before replacing source
+      if (statusSubscription.current) {
+        statusSubscription.current.remove();
       }
-    } else {
+      // Replace the audio source (stops and clears any current audio)
+      sound.current.replace({ uri: URLSToPlayAudiotracks[index] });
+
+      // Apply playback settings
+      sound.current.setPlaybackRate(audioPlayerSettings.rate);
+      sound.current.loop = audioPlayerSettings.isLooping;
+      sound.current.muted = audioPlayerSettings.isMuted;
+      sound.current.volume = audioPlayerSettings.volume;
+      sound.current.shouldCorrectPitch = audioPlayerSettings.shouldCorrectPitch;
+
+      // Seek to the saved position for this track
+      if (audiotrackPositions > 0) {
+        await sound.current.seekTo(audiotrackPositions / 1000);
+      }
+
+      // Set up the status listener for this track
+      statusSubscription.current = sound.current.addListener(
+        'playbackStatusUpdate',
+        UpdateStatus
+      );
+
+      setCurrentAudiotrackPlaying({
+        ...currentAudiotrackPlaying,
+        audioTrackReader: chapters[index]?.readers[0]?.display_name,
+        audioTrackChapterPlayingTitle:
+          chapters[index]?.section_number + ". " + chapters[index]?.title,
+        duration: sound.current.duration * 1000,
+      });
       setAudiotrackLoadingStatuses({
         ...audiotrackLoadingStatuses,
         loadingCurrentAudiotrack: false,
         loadedCurrentAudiotrack: true,
       });
+      await PlayAudio();
+    } catch (error) {
+      setAudiotrackLoadingStatuses({
+        ...audiotrackLoadingStatuses,
+        loadingCurrentAudiotrack: false,
+        loadedCurrentAudiotrack: false,
+      });
+      console.log("Error: ", error);
     }
   };
 
   const PlayAudio = async () => {
     try {
-      const result = await sound.current.getStatusAsync();
-      if (result.isLoaded) {
-        if (result.isPlaying === false) {
-          await sound.current.playAsync();
-          SetIsPlaying(true);
-        }
+      if (!sound.current.playing) {
+        sound.current.play();
+        SetIsPlaying(true);
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -587,13 +571,10 @@ function Audiotracks(props: any) {
   const PauseAudio = async () => {
     try {
       setIsAudioPaused(false);
-      const result = await sound.current.getStatusAsync();
-      if (result.isLoaded) {
-        if (result.isPlaying === true) {
-          await sound.current.pauseAsync();
-          setIsAudioPaused(true);
-          SetIsPlaying(false);
-        }
+      if (sound.current.playing) {
+        sound.current.pause();
+        setIsAudioPaused(true);
+        SetIsPlaying(false);
       }
     } catch (error) {
       console.log("Error: ", error);
@@ -603,35 +584,27 @@ function Audiotracks(props: any) {
   const HandleNextTrack = async () => {
     try {
       if (currentAudioTrackIndex.current < URLSToPlayAudiotracks.length - 1) {
-        const unloadSound = await sound.current.unloadAsync();
-        if (unloadSound.isLoaded === false) {
-          currentAudioTrackIndex.current += 1;
-          setCurrentSliderPosition(0.0);
-          // ResetPlayer();
-
-          await LoadAudio(
-            currentAudioTrackIndex.current,
-            audiotracksData.currentAudiotrackPositionsMs[
-              currentAudioTrackIndex.current
-            ]
-          );
-        }
+        currentAudioTrackIndex.current += 1;
+        setCurrentSliderPosition(0.0);
+        await LoadAudio(
+          currentAudioTrackIndex.current,
+          audiotracksData.currentAudiotrackPositionsMs[
+            currentAudioTrackIndex.current
+          ]
+        );
       } else if (
         currentAudioTrackIndex.current >=
         URLSToPlayAudiotracks.length - 1
       ) {
-        const unloadSound = await sound.current.unloadAsync();
-        if (unloadSound.isLoaded === false) {
-          currentAudioTrackIndex.current = 0;
-          setCurrentSliderPosition(0.0);
-          await ResetPlayer();
-          await LoadAudio(
-            currentAudioTrackIndex.current,
-            audiotracksData.currentAudiotrackPositionsMs[
-              currentAudioTrackIndex.current
-            ]
-          );
-        }
+        currentAudioTrackIndex.current = 0;
+        setCurrentSliderPosition(0.0);
+        await ResetPlayer();
+        await LoadAudio(
+          currentAudioTrackIndex.current,
+          audiotracksData.currentAudiotrackPositionsMs[
+            currentAudioTrackIndex.current
+          ]
+        );
       }
     } catch (err) {
       console.log(err);
@@ -641,16 +614,13 @@ function Audiotracks(props: any) {
   const HandlePrevTrack = async () => {
     try {
       if (currentAudioTrackIndex.current - 1 >= 0) {
-        const unloadSound = await sound.current.unloadAsync();
-        if (unloadSound.isLoaded === false) {
-          await LoadAudio(
-            currentAudioTrackIndex.current - 1,
-            audiotracksData.currentAudiotrackPositionsMs[
-              currentAudioTrackIndex.current - 1
-            ]
-          );
-          currentAudioTrackIndex.current -= 1;
-        }
+        currentAudioTrackIndex.current -= 1;
+        await LoadAudio(
+          currentAudioTrackIndex.current,
+          audiotracksData.currentAudiotrackPositionsMs[
+            currentAudioTrackIndex.current
+          ]
+        );
       }
     } catch (err) {
       console.log(err);
@@ -702,15 +672,11 @@ function Audiotracks(props: any) {
 
   const PlayFromListenButton = async (index: number) => {
     try {
-      const unloadSound = await sound.current.unloadAsync();
-      if (unloadSound.isLoaded === false) {
-        setCurrentSliderPosition(0.0);
-        await ResetPlayer();
-        await LoadAudio(
-          index,
-          audiotracksData.currentAudiotrackPositionsMs[index]
-        );
-      }
+      setCurrentSliderPosition(0.0);
+      await LoadAudio(
+        index,
+        audiotracksData.currentAudiotrackPositionsMs[index]
+      );
     } catch (e) {
       console.log(e);
     }
@@ -718,12 +684,8 @@ function Audiotracks(props: any) {
 
   const PlayFromStartOfTrack = async (index: number) => {
     try {
-      const unloadSound = await sound.current.unloadAsync();
-      if (unloadSound.isLoaded === false) {
-        setCurrentSliderPosition(0.0);
-        await ResetPlayer();
-        await LoadAudio(index, 0);
-      }
+      setCurrentSliderPosition(0.0);
+      await LoadAudio(index, 0);
     } catch (e) {
       console.log(e);
     }

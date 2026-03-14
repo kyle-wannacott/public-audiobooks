@@ -25,6 +25,7 @@ import Settings from "../screens/Settings";
 import Explore from "../screens/Explore";
 import * as NavigationBar from "expo-navigation-bar";
 import { isEdgeToEdge } from "react-native-is-edge-to-edge";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import {
   audiobookHistoryTableName,
@@ -95,10 +96,11 @@ const BottomTab = createBottomTabNavigator<RootTabParamList>();
 const ExploreTopTab = createMaterialTopTabNavigator();
 
 function SearchTopTabs() {
+  const insets = useSafeAreaInsets();
   return (
     <>
       <ExploreTopTab.Navigator
-        screenOptions={{ swipeEnabled: false, lazy: true }}
+        screenOptions={{ swipeEnabled: false, lazy: true, tabBarStyle: { paddingTop: insets.top } }}
       >
         <ExploreTopTab.Screen
           initialParams={{
@@ -142,6 +144,7 @@ function SearchTopTabs() {
 const BookshelfTab = createMaterialTopTabNavigator();
 
 function BookshelfTabs() {
+  const insets = useSafeAreaInsets();
   const starredQuery = `select * from ${audiobookHistoryTableName} inner join ${audiobookProgressTableName} on ${audiobookProgressTableName}.audiobook_id = ${audiobookHistoryTableName}.audiobook_id where ${audiobookProgressTableName}.audiobook_shelved=1`;
 
   const inProgressQuery = `select * from ${audiobookHistoryTableName} inner join ${audiobookProgressTableName} on ${audiobookProgressTableName}.audiobook_id = ${audiobookHistoryTableName}.audiobook_id where ${audiobookProgressTableName}.listening_progress_percent > 0.001 and ${audiobookProgressTableName}.listening_progress_percent <= 0.99`;
@@ -149,7 +152,7 @@ function BookshelfTabs() {
   const finishedQuery = `select * from ${audiobookHistoryTableName} inner join ${audiobookProgressTableName} on ${audiobookProgressTableName}.audiobook_id = ${audiobookHistoryTableName}.audiobook_id where ${audiobookProgressTableName}.listening_progress_percent > 0.99`;
 
   return (
-    <BookshelfTab.Navigator screenOptions={{ swipeEnabled: false }}>
+    <BookshelfTab.Navigator screenOptions={{ swipeEnabled: false, tabBarStyle: { paddingTop: insets.top } }}>
       <BookshelfTab.Screen
         initialParams={{ sqlQuery: starredQuery }}
         name="Starred"
@@ -178,11 +181,13 @@ function BottomTabNavigator() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          height: 75,
+          height: 80,
           backgroundColor: Colors[colorScheme].tabBackgroundColor,
         },
+        tabBarIconStyle: { height: 36, width: 36 },
+        tabBarLabelStyle: { fontSize: 11, marginBottom: 6 },
         tabBarIcon: ({ focused, color, size }) => {
-          size = 40;
+          size = 36;
           let iconName;
           switch (route.name) {
             case "Explore":

@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { openDatabase } from "../db/utils";
 
@@ -13,6 +14,7 @@ const db = openDatabase();
 let lolcache = {};
 
 function Bookshelf(props:any) {
+  const insets = useSafeAreaInsets();
   const sqlQuery = props.route.params.sqlQuery
   const [audiobookHistory, setAudiobookHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
@@ -45,7 +47,7 @@ function Bookshelf(props:any) {
   const asyncDataKeyNameForPickerAndToggle = "pickerAndQueryDataBookshelf";
 
   return (
-    <View>
+    <View style={{ paddingTop: insets.top }}>
       <BookShelfAndHistoryShelf
         getShelvedBooks={getShelvedBooks}
         audiobookHistory={audiobookHistory}

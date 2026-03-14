@@ -2,6 +2,7 @@ import React from "react";
 import { useState } from "react";
 
 import { View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { openDatabase } from "../db/utils";
 import {
@@ -17,6 +18,7 @@ const db = openDatabase();
 let lolcache = {};
 
 function History() {
+  const insets = useSafeAreaInsets();
   const [audiobookHistory, setAudiobookHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(true);
 
@@ -49,7 +51,7 @@ function History() {
   const asyncDataKeyNameForPickerAndToggle = "pickerAndQueryDataHistory";
 
   return (
-    <View>
+    <View style={{ paddingTop: insets.top }}>
       <BookShelfAndHistoryShelf
         getShelvedBooks={getShelvedBooks}
         audiobookHistory={audiobookHistory}

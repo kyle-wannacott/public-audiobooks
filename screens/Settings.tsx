@@ -3,13 +3,14 @@ import { StyleSheet, Text, View, Alert, Linking } from "react-native";
 import SettingsList from "react-native-settings-list";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
-
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { storeAsyncData, getAsyncData } from "../db/database_functions";
 
 const UserSettings = () => {
   const colorScheme = useColorScheme();
   const currentColorScheme = Colors[colorScheme];
+  const insets = useSafeAreaInsets();
   const [audioModeSettings, setAudioModeSettings] = useState({
     interruptionModeAndroid: 1,
     staysActiveInBackground: true,
@@ -76,7 +77,7 @@ const UserSettings = () => {
         <Text
           style={[
             styles.settingsTitle,
-            { color: currentColorScheme.settingsTitleText },
+            { color: currentColorScheme.settingsTitleText, marginTop: insets.top + 10 },
           ]}
         >
           Settings
@@ -268,7 +269,7 @@ const UserSettings = () => {
                 color={"green"}
               />
             }
-            titleInfo="2.0.0"
+            titleInfo="3.0.0"
             hasNavArrow={false}
             title="Version: "
           />
@@ -282,11 +283,11 @@ const UserSettings = () => {
                 color={currentColorScheme.settingsIconsColor}
               />
             }
-            title="GitHub: LeeWannacott"
+            title="GitHub: kyle-wannacott"
             onPress={() =>
               Alert.alert(
                 "GitHub",
-                "Checkout my GitHub to open issues, contribute, or request features.",
+                "Checkout the GitHub to open issues, contribute, or request features.",
                 [
                   {
                     text: "Cancel",
@@ -296,7 +297,7 @@ const UserSettings = () => {
                   {
                     text: "github",
                     onPress: () => {
-                      Linking.openURL("https://github.com/LeeWannacott");
+                      Linking.openURL("https://github.com/kyle-wannacott/public-audiobooks");
                     },
                   },
                 ]
@@ -344,7 +345,6 @@ const styles = StyleSheet.create({
   container: { flex: 1 },
   sectionHeadings: { flex: 1 },
   settingsTitle: {
-    marginTop: 35,
     marginBottom: 15,
     marginLeft: 15,
     fontWeight: "bold",

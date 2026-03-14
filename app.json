@@ -2,7 +2,7 @@
   "expo": {
     "name": "Public Audiobooks",
     "slug": "libriaudire",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/PublicAudiobooksIcon.png",
     "scheme": "myapp",
@@ -27,7 +27,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.leewannacott.libriaudire",
-      "versionCode": 8
+      "versionCode": 9
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -41,7 +41,8 @@
       "expo-asset",
       "expo-font",
       "expo-sqlite",
-      "expo-web-browser"
+      "expo-web-browser",
+      ["expo-audio", { "enableBackgroundPlayback": true }]
     ]
   }
 }

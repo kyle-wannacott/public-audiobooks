@@ -227,6 +227,10 @@ export default function BookShelfAndHistoryShelf(props: any) {
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             numColumns={2}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={6}
+            initialNumToRender={6}
+            windowSize={10}
           />
         </View>
       </View>
