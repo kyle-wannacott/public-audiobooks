@@ -33,7 +33,7 @@ import AudiobookCover from "./AudiobookCoverHistoryAndBookshelf";
 import { useAudio } from "../hooks/AudioContext";
 
 const db = openDatabase();
-const MINI_PLAYER_CONTENT_HEIGHT = 130;
+const MINI_PLAYER_CONTENT_HEIGHT = 95;
 
 export default function BookShelfAndHistoryShelf(props: any) {
   const colorScheme = useColorScheme();

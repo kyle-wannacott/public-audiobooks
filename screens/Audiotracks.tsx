@@ -271,6 +271,19 @@ function Audiotracks(props: any) {
 
   // Load book into global audio context when chapters + URLs are ready
   const bookLoadedRef = useRef(false);
+  const sectionListRef = useRef<any>(null);
+
+  const scrollToReviews = () => {
+    try {
+      sectionListRef.current?.scrollToLocation({ sectionIndex: 1, itemIndex: 0, viewOffset: 0, animated: true });
+    } catch (_) {}
+  };
+
+  const scrollToTop = () => {
+    try {
+      sectionListRef.current?.scrollToLocation({ sectionIndex: 0, itemIndex: 0, viewOffset: 0, animated: true });
+    } catch (_) {}
+  };
   useEffect(() => {
     if (
       chapters &&
@@ -773,6 +786,22 @@ function Audiotracks(props: any) {
                   }
                 />
               </Button>
+              <Button
+                accessibilityLabel="Scroll to reviews"
+                mode={Colors[colorScheme].buttonMode}
+                onPress={scrollToReviews}
+                style={{ backgroundColor: Colors[colorScheme].buttonBackgroundColor, marginLeft: 6 }}
+              >
+                <MaterialCommunityIcons name="comment-text-outline" size={24} color={Colors[colorScheme].buttonIconColor} />
+              </Button>
+              <Button
+                accessibilityLabel="Write a review"
+                mode={Colors[colorScheme].buttonMode}
+                onPress={() => toggleWriteReviewOverlay()}
+                style={{ backgroundColor: Colors[colorScheme].buttonBackgroundColor, marginLeft: 6 }}
+              >
+                <MaterialIcons name="rate-review" size={24} color={Colors[colorScheme].buttonIconColor} />
+              </Button>
               {isDownloading && (
                 <Text style={{ color: Colors[colorScheme].text, marginLeft: 8, alignSelf: "center" }}>
                   {downloadProgress.filter((p) => p.status === "complete").length}/
@@ -787,21 +816,39 @@ function Audiotracks(props: any) {
 
     const makeReviewIcon = () => {
       return (
-        <Button
-          accessibilityLabel="Opens overlay for writing a review on the audiobook."
-          mode={Colors[colorScheme].buttonMode}
-          onPress={() => toggleWriteReviewOverlay()}
-          style={{
-            backgroundColor: Colors[colorScheme].buttonBackgroundColor,
-            height: 45,
-          }}
-        >
-          <MaterialIcons
-            name="rate-review"
-            size={30}
-            color={Colors[colorScheme].buttonIconColor}
-          />
-        </Button>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Button
+            accessibilityLabel="Opens overlay for writing a review on the audiobook."
+            mode={Colors[colorScheme].buttonMode}
+            onPress={() => toggleWriteReviewOverlay()}
+            style={{
+              backgroundColor: Colors[colorScheme].buttonBackgroundColor,
+              height: 45,
+            }}
+          >
+            <MaterialIcons
+              name="rate-review"
+              size={30}
+              color={Colors[colorScheme].buttonIconColor}
+            />
+          </Button>
+          <Button
+            accessibilityLabel="Scroll back to top of audiobook"
+            mode={Colors[colorScheme].buttonMode}
+            onPress={scrollToTop}
+            style={{
+              backgroundColor: Colors[colorScheme].buttonBackgroundColor,
+              height: 45,
+              marginLeft: 6,
+            }}
+          >
+            <MaterialCommunityIcons
+              name="arrow-up-circle-outline"
+              size={30}
+              color={Colors[colorScheme].buttonIconColor}
+            />
+          </Button>
+        </View>
       );
     };
 
@@ -905,6 +952,7 @@ function Audiotracks(props: any) {
             ]}
           >
             <SectionList
+              ref={sectionListRef}
               sections={AudioTracksScreenData}
               keyExtractor={(item: any, index: number) =>
                 `${index}_${String(item?.id ?? item?.createdate ?? index)}`

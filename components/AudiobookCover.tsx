@@ -219,10 +219,21 @@ export default function AudiobookCover(props) {
         ]}
       >
         <Pressable style={styles.listPressable} onPress={navigateToAudio}>
-          <Image
-            source={{ uri: bookCovers[index] }}
-            style={styles.listCoverImage}
-          />
+          <View style={{ position: 'relative' }}>
+            <Image
+              source={{ uri: bookCovers[index] }}
+              style={styles.listCoverImage}
+            />
+            <TouchableOpacity
+              onPress={openInfo}
+              style={{ position: 'absolute', top: 2, left: 2, zIndex: 10 }}
+              hitSlop={{ top: 6, left: 6, bottom: 6, right: 6 }}
+            >
+              <View style={{ backgroundColor: 'rgba(0,0,0,0.55)', borderRadius: 10, width: 20, height: 20, alignItems: 'center', justifyContent: 'center' }}>
+                <MaterialCommunityIcons name="information-outline" size={14} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          </View>
           <View style={styles.listInfo}>
             <Text
               numberOfLines={2}
@@ -272,13 +283,6 @@ export default function AudiobookCover(props) {
           </View>
         </Pressable>
         <View style={styles.listActions}>
-          <Button mode="text" compact onPress={openInfo}>
-            <MaterialCommunityIcons
-              name="information-outline"
-              size={22}
-              color={Colors[colorScheme].text}
-            />
-          </Button>
           <Button mode="text" compact onPress={toggleShelve}>
             <MaterialCommunityIcons
               name={audiobooksProgress[item?.id]?.audiobook_shelved ? "star" : "star-outline"}
