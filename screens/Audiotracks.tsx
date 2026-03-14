@@ -443,6 +443,14 @@ function Audiotracks(props: any) {
         }
       } else if (positionMillis > 0 && durationMillis > 0) {
         updateAndStoreAudiobookPositions({ positionMillis, durationMillis });
+        // expo-audio duration becomes available asynchronously after replace();
+        // keep currentAudiotrackPlaying.duration in sync
+        setCurrentAudiotrackPlaying((prev) => {
+          if (prev.duration !== durationMillis) {
+            return { ...prev, duration: durationMillis };
+          }
+          return prev;
+        });
       }
     } catch (error) {
       console.log("Error: ", error);

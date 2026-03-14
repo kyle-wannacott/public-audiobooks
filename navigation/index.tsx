@@ -181,10 +181,10 @@ function BottomTabNavigator() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarStyle: {
-          height: 95,
+          height: 110,
           backgroundColor: Colors[colorScheme].tabBackgroundColor,
         },
-        tabBarItemStyle: { paddingVertical: 6 },
+        tabBarItemStyle: { paddingVertical: 8 },
         tabBarIconStyle: { flex: 1 },
         tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
         tabBarIcon: ({ focused, color, size }) => {

@@ -135,15 +135,15 @@ export default function BookShelfAndHistoryShelf(props: any) {
         windowWidth={windowWidth}
         windowHeight={windowHeight}
       />
-      {audiobooksProgress[item.audiobook_id]?.audiobook_id ==
-        item.audiobook_id &&
-      audiobooksProgress[item.audiobook_id]?.audiobook_rating > 0 ? (
+      {(audiobooksProgress[item.audiobook_id]?.audiobook_rating > 0 ||
+        pickerAndQueryState.pickerIndex === 2) &&
+      audiobooksProgress[item.audiobook_id] ? (
         <Rating
           showRating={false}
           imageSize={20}
           ratingCount={5}
           startingValue={
-            audiobooksProgress[item.audiobook_id]?.audiobook_rating
+            audiobooksProgress[item.audiobook_id]?.audiobook_rating ?? 0
           }
           readonly={true}
           tintColor={Colors[colorScheme].ratingBackgroundColor}
