@@ -100,7 +100,13 @@ function SearchTopTabs() {
   return (
     <>
       <ExploreTopTab.Navigator
-        screenOptions={{ swipeEnabled: false, lazy: true, tabBarStyle: { paddingTop: insets.top } }}
+        screenOptions={{
+          swipeEnabled: false,
+          lazy: false,
+          tabBarStyle: { paddingTop: insets.top },
+          tabBarIndicatorStyle: { height: 3 },
+          tabBarPressOpacity: 1,
+        }}
       >
         <ExploreTopTab.Screen
           initialParams={{

@@ -194,6 +194,56 @@ export function initialAudioBookProgressStoreDB(db: any, initialAudiobook: any) 
   });
 }
 
+// ─── Ratings cache ──────────────────────────────────────────────────────────
+// Lightweight table to persist community ratings fetched from archive.org so
+// they survive tab switches and app restarts without re-hitting the API.
+
+export const audiobookRatingsCacheTableName = "audiobook_ratings_cache";
+
+export function createRatingsCacheTable(db: any) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `CREATE TABLE IF NOT EXISTS ${audiobookRatingsCacheTableName} ` +
+        `(audiobook_id TEXT PRIMARY KEY, audiobook_rating REAL, fetched_at INTEGER);`
+    );
+  });
+}
+
+export function upsertRatingCacheDB(
+  db: any,
+  audiobook_id: string,
+  rating: number
+) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `INSERT OR REPLACE INTO ${audiobookRatingsCacheTableName} ` +
+        `(audiobook_id, audiobook_rating, fetched_at) VALUES (?, ?, ?);`,
+      [audiobook_id, rating, Date.now()]
+    );
+  });
+}
+
+export function loadRatingsCacheDB(
+  db: any,
+  callback: (ratings: Record<string, number>) => void
+) {
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `SELECT audiobook_id, audiobook_rating FROM ${audiobookRatingsCacheTableName};`,
+      [],
+      (_: any, { rows }: any) => {
+        const ratings: Record<string, number> = {};
+        rows._array.forEach((row: any) => {
+          ratings[row.audiobook_id] = row.audiobook_rating;
+        });
+        callback(ratings);
+      }
+    );
+  });
+}
+
+// ─── AsyncStorage helpers ────────────────────────────────────────────────────
+
 export const storeAsyncData = async (key: any, value: any) => {
   try {
     const jsonValue = JSON.stringify(value);

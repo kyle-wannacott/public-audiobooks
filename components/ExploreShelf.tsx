@@ -22,6 +22,9 @@ import {
   audiobookProgressTableName,
   initialAudioBookProgressStoreDB,
   updateAudiobookRatingDB,
+  createRatingsCacheTable,
+  upsertRatingCacheDB,
+  loadRatingsCacheDB,
 } from "../db/database_functions";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
@@ -50,6 +53,7 @@ export default function ExploreShelf(props: any) {
     try {
       createAudioBookDataTable(db);
       createHistoryTableDB(db);
+      createRatingsCacheTable(db);
     } catch (err) {
       console.log(err);
     }
@@ -250,6 +254,9 @@ export default function ExploreShelf(props: any) {
                 setAudiobooksProgress((prev: any) => {
                   if (prev[book.id]?.audiobook_rating > 0) return prev;
                   const existing = prev[book.id] || {};
+                  // Persist to dedicated ratings cache (survives tab switches)
+                  upsertRatingCacheDB(db, book.id, Math.round(avg * 100) / 100);
+                  // Also update progress table if book already exists there
                   updateAudiobookRatingDB(db, book.id, Math.round(avg * 100) / 100);
                   return {
                     ...prev,
@@ -283,11 +290,21 @@ export default function ExploreShelf(props: any) {
       const query = `select * from ${audiobookProgressTableName}`;
       db.transaction((tx) => {
         tx.executeSql(`${query}`, [], (_, { rows }) => {
-          const audioProgressData = {};
+          const audioProgressData: Record<string, any> = {};
           rows._array.forEach((row) => {
-            return (audioProgressData[row.audiobook_id] = row);
+            audioProgressData[row.audiobook_id] = row;
           });
-          setAudiobooksProgress(audioProgressData);
+          // Merge in cached community ratings for books not yet in progress table
+          loadRatingsCacheDB(db, (cachedRatings) => {
+            Object.entries(cachedRatings).forEach(([id, rating]) => {
+              if (!audioProgressData[id]) {
+                audioProgressData[id] = { audiobook_id: id, audiobook_rating: rating };
+              } else if (!audioProgressData[id].audiobook_rating) {
+                audioProgressData[id] = { ...audioProgressData[id], audiobook_rating: rating };
+              }
+            });
+            setAudiobooksProgress(audioProgressData);
+          });
         });
       }, undefined);
     });
