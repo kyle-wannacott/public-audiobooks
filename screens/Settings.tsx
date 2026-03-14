@@ -116,7 +116,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="run-fast"
                 size={50}
-                color={"#FF8C00"}
+                color={"#2E8B57"}
               />
             }
             hasNavArrow={false}
@@ -144,7 +144,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="duck"
                 size={50}
-                color={"#008B8B"}
+                color={"#FFD700"}
               />
             }
             hasNavArrow={false}
@@ -280,7 +280,7 @@ const UserSettings = () => {
               <MaterialCommunityIcons
                 name="github"
                 size={50}
-                color={"#6e40c9"}
+                color={"#000000"}
               />
             }
             title="GitHub: kyle-wannacott"

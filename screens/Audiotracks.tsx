@@ -516,14 +516,6 @@ function Audiotracks(props: any) {
       // Replace the audio source (stops and clears any current audio)
       sound.current.replace({ uri: URLSToPlayAudiotracks[index] });
 
-      // Register for lock screen / background controls
-      sound.current.setActiveForLockScreen(true, {
-        title: chapters[index]?.title ?? title,
-        artist: `${authorFirstName} ${authorLastName}`.trim(),
-        albumTitle: title,
-        artworkUrl: coverImage ?? undefined,
-      });
-
       // Apply playback settings
       sound.current.setPlaybackRate(audioPlayerSettings.rate);
       sound.current.loop = audioPlayerSettings.isLooping;
