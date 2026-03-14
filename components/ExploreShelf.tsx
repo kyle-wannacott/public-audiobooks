@@ -26,6 +26,7 @@ import {
   createRatingsCacheTable,
   upsertRatingCacheDB,
   loadRatingsCacheDB,
+  loadRatingsCacheForIds,
 } from "../db/database_functions";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
@@ -235,31 +236,60 @@ export default function ExploreShelf(props: any) {
     }
   }, [data.books]);
 
-  // Auto-fetch ratings for all books after review URLs are ready, staggered to
-  // avoid hammering the archive.org API. Runs after interactions to avoid tab animation jank.
+  // Auto-fetch ratings: first check DB cache (fast bulk query), only hit network for uncached books.
+  // Wrapped in InteractionManager to avoid interfering with tab animations.
   useEffect(() => {
     if (reviewURLS.length === 0 || !data?.books) return;
     const books = Object.values(data.books) as any[];
+    const allIds = books.map((b: any) => String(b.id));
     const timeouts: ReturnType<typeof setTimeout>[] = [];
+    let cancelled = false;
+
     const task = InteractionManager.runAfterInteractions(() => {
-      books.forEach((book: any, index: number) => {
-        if (!reviewURLS[index]) return;
-        const t = setTimeout(() => {
-          fetch(reviewURLS[index])
-            .then((r) => r.json())
-            .then((json) => {
-              setRatingsFetched((prev) => new Set([...prev, book.id]));
-              if (json?.result?.length > 0) {
-                const stars = json.result.reduce(
-                  (sum: number, r: any) => sum + Number(r.stars), 0
-                );
-                const avg = stars / json.result.length;
+      // Single bulk DB query to find which books are already cached
+      loadRatingsCacheForIds(db, allIds, (cached) => {
+        if (cancelled) return;
+
+        // Pre-populate state from cache immediately (no network needed)
+        if (Object.keys(cached).length > 0) {
+          setRatingsFetched((prev) => {
+            const next = new Set(prev);
+            Object.keys(cached).forEach((id) => next.add(id));
+            return next;
+          });
+          setAudiobooksProgress((prev: any) => {
+            const updates: any = {};
+            Object.entries(cached).forEach(([id, entry]: any) => {
+              if (entry.hasRating && entry.rating > 0 && !prev[id]?.audiobook_rating) {
+                updates[id] = { ...(prev[id] || {}), audiobook_id: id, audiobook_rating: entry.rating };
+              }
+            });
+            return Object.keys(updates).length > 0 ? { ...prev, ...updates } : prev;
+          });
+        }
+
+        // Only fetch from network for books not yet in cache
+        let fetchIndex = 0;
+        books.forEach((book: any, index: number) => {
+          if (!reviewURLS[index] || cached[String(book.id)] !== undefined) return;
+          const t = setTimeout(() => {
+            if (cancelled) return;
+            fetch(reviewURLS[index])
+              .then((r) => r.json())
+              .then((json) => {
+                if (cancelled) return;
+                const hasRating = (json?.result?.length ?? 0) > 0;
+                const avg = hasRating
+                  ? json.result.reduce((s: number, r: any) => s + Number(r.stars), 0) / json.result.length
+                  : 0;
+                const roundedAvg = isNaN(avg) ? 0 : Math.round(avg * 100) / 100;
+                upsertRatingCacheDB(db, String(book.id), roundedAvg, hasRating);
+                setRatingsFetched((prev) => new Set([...prev, book.id]));
                 if (!isNaN(avg) && avg > 0) {
                   setAudiobooksProgress((prev: any) => {
                     if (prev[book.id]?.audiobook_rating > 0) return prev;
                     const existing = prev[book.id] || {};
-                    upsertRatingCacheDB(db, book.id, Math.round(avg * 100) / 100);
-                    updateAudiobookRatingDB(db, book.id, Math.round(avg * 100) / 100);
+                    updateAudiobookRatingDB(db, book.id, roundedAvg);
                     return {
                       ...prev,
                       [book.id]: {
@@ -277,16 +307,20 @@ export default function ExploreShelf(props: any) {
                     };
                   });
                 }
-              }
-            })
-            .catch(() => {
-              setRatingsFetched((prev) => new Set([...prev, book.id]));
-            });
-        }, index * 50);
-        timeouts.push(t);
+              })
+              .catch(() => {
+                // Don't cache network errors — will retry next session
+                if (!cancelled) setRatingsFetched((prev) => new Set([...prev, book.id]));
+              });
+          }, fetchIndex * 50);
+          timeouts.push(t);
+          fetchIndex++;
+        });
       });
     });
+
     return () => {
+      cancelled = true;
       task.cancel();
       timeouts.forEach(clearTimeout);
     };
@@ -304,13 +338,19 @@ export default function ExploreShelf(props: any) {
           });
           // Merge in cached community ratings for books not yet in progress table
           loadRatingsCacheDB(db, (cachedRatings) => {
-            Object.entries(cachedRatings).forEach(([id, rating]) => {
+            const fetchedIds = new Set<any>();
+            Object.entries(cachedRatings).forEach(([id, entry]: any) => {
+              fetchedIds.add(id);
               if (!audioProgressData[id]) {
-                audioProgressData[id] = { audiobook_id: id, audiobook_rating: rating };
-              } else if (!audioProgressData[id].audiobook_rating) {
-                audioProgressData[id] = { ...audioProgressData[id], audiobook_rating: rating };
+                audioProgressData[id] = {
+                  audiobook_id: id,
+                  audiobook_rating: entry.hasRating ? entry.rating : 0,
+                };
+              } else if (!audioProgressData[id].audiobook_rating && entry.hasRating) {
+                audioProgressData[id] = { ...audioProgressData[id], audiobook_rating: entry.rating };
               }
             });
+            setRatingsFetched(fetchedIds);
             setAudiobooksProgress(audioProgressData);
           });
         });

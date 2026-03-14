@@ -200,11 +200,23 @@ export function initialAudioBookProgressStoreDB(db: any, initialAudiobook: any) 
 
 export const audiobookRatingsCacheTableName = "audiobook_ratings_cache";
 
+export interface RatingCacheEntry {
+  rating: number;
+  hasRating: boolean;
+}
+
 export function createRatingsCacheTable(db: any) {
   db.transaction((tx: any) => {
     tx.executeSql(
       `CREATE TABLE IF NOT EXISTS ${audiobookRatingsCacheTableName} ` +
-        `(audiobook_id TEXT PRIMARY KEY, audiobook_rating REAL, fetched_at INTEGER);`
+        `(audiobook_id TEXT PRIMARY KEY, audiobook_rating REAL, has_rating INTEGER NOT NULL DEFAULT 1, fetched_at INTEGER);`
+    );
+    // Migrate existing tables that don't have the has_rating column yet
+    tx.executeSql(
+      `ALTER TABLE ${audiobookRatingsCacheTableName} ADD COLUMN has_rating INTEGER NOT NULL DEFAULT 1;`,
+      [],
+      undefined,
+      () => {} // ignore error if column already exists
     );
   });
 }
@@ -212,29 +224,63 @@ export function createRatingsCacheTable(db: any) {
 export function upsertRatingCacheDB(
   db: any,
   audiobook_id: string,
-  rating: number
+  rating: number,
+  hasRating: boolean = true
 ) {
   db.transaction((tx: any) => {
     tx.executeSql(
       `INSERT OR REPLACE INTO ${audiobookRatingsCacheTableName} ` +
-        `(audiobook_id, audiobook_rating, fetched_at) VALUES (?, ?, ?);`,
-      [audiobook_id, rating, Date.now()]
+        `(audiobook_id, audiobook_rating, has_rating, fetched_at) VALUES (?, ?, ?, ?);`,
+      [audiobook_id, rating, hasRating ? 1 : 0, Date.now()]
     );
   });
 }
 
 export function loadRatingsCacheDB(
   db: any,
-  callback: (ratings: Record<string, number>) => void
+  callback: (ratings: Record<string, RatingCacheEntry>) => void
 ) {
   db.transaction((tx: any) => {
     tx.executeSql(
-      `SELECT audiobook_id, audiobook_rating FROM ${audiobookRatingsCacheTableName};`,
+      `SELECT audiobook_id, audiobook_rating, has_rating FROM ${audiobookRatingsCacheTableName};`,
       [],
       (_: any, { rows }: any) => {
-        const ratings: Record<string, number> = {};
+        const ratings: Record<string, RatingCacheEntry> = {};
         rows._array.forEach((row: any) => {
-          ratings[row.audiobook_id] = row.audiobook_rating;
+          ratings[row.audiobook_id] = {
+            rating: row.audiobook_rating ?? 0,
+            hasRating: row.has_rating === 1,
+          };
+        });
+        callback(ratings);
+      }
+    );
+  });
+}
+
+// Bulk query: load cache entries only for a specific set of IDs.
+// Much faster than loading the full table when only checking a page of books.
+export function loadRatingsCacheForIds(
+  db: any,
+  ids: string[],
+  callback: (ratings: Record<string, RatingCacheEntry>) => void
+) {
+  if (ids.length === 0) {
+    callback({});
+    return;
+  }
+  const placeholders = ids.map(() => "?").join(",");
+  db.transaction((tx: any) => {
+    tx.executeSql(
+      `SELECT audiobook_id, audiobook_rating, has_rating FROM ${audiobookRatingsCacheTableName} WHERE audiobook_id IN (${placeholders});`,
+      ids,
+      (_: any, { rows }: any) => {
+        const ratings: Record<string, RatingCacheEntry> = {};
+        rows._array.forEach((row: any) => {
+          ratings[row.audiobook_id] = {
+            rating: row.audiobook_rating ?? 0,
+            hasRating: row.has_rating === 1,
+          };
         });
         callback(ratings);
       }

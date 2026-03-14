@@ -14,6 +14,7 @@ import {
   Image,
   Pressable,
   StyleSheet,
+  Text,
   View,
 } from "react-native";
 import AudiobookAccordionList from "../components/audiobookAccordionList";
@@ -25,6 +26,8 @@ import {
   getAsyncData,
   storeAsyncData,
   updateIfBookShelvedDB,
+  loadRatingsCacheForIds,
+  RatingCacheEntry,
 } from "../db/database_functions";
 import AudiobookCover from "./AudiobookCoverHistoryAndBookshelf";
 
@@ -33,6 +36,7 @@ const db = openDatabase();
 export default function BookShelfAndHistoryShelf(props: any) {
   const colorScheme = useColorScheme();
   const [audiobooksProgress, setAudiobooksProgress] = useState({});
+  const [ratingsCache, setRatingsCache] = useState<Record<string, RatingCacheEntry>>({});
   const [avatarOnPressEnabled, setAvatarOnPressEnabled] = useState(true);
 
   const [pickerAndQueryState, setPickerAndQueryState] = useState<any>({
@@ -148,6 +152,8 @@ export default function BookShelfAndHistoryShelf(props: any) {
           readonly={true}
           tintColor={Colors[colorScheme].ratingBackgroundColor}
         />
+      ) : ratingsCache[item.audiobook_id]?.hasRating === false ? (
+        <Text style={styles.noRatingText}>No rating</Text>
       ) : undefined}
       <AudiobookAccordionList
         accordionTitle={selectAccordionPickerTitle(
@@ -177,8 +183,14 @@ export default function BookShelfAndHistoryShelf(props: any) {
               rows._array.forEach((row) => {
                 return (audioProgressData[row.audiobook_id] = row);
               });
-              // console.log(audioProgressData);
               setAudiobooksProgress(audioProgressData);
+              // Load ratings cache for the books we have, to know which have no rating
+              const ids = Object.keys(audioProgressData);
+              if (ids.length > 0) {
+                loadRatingsCacheForIds(db, ids, (cached) => {
+                  setRatingsCache(cached);
+                });
+              }
             }
           );
         }, null);
@@ -271,5 +283,11 @@ const styles = StyleSheet.create({
   },
   ActivityIndicatorStyle: {
     top: windowHeight / 3,
+  },
+  noRatingText: {
+    textAlign: "center",
+    fontSize: 11,
+    color: "#999",
+    paddingVertical: 2,
   },
 });
