@@ -196,6 +196,7 @@ export default function ExploreShelf(props: any) {
     if (data.books) {
       const dataKeys = Object.values(data.books);
       dataKeys.forEach((book: any) => {
+        try {
         // Use the new LibriVox coverart API field if available; fall back to archive.org image service
         let coverUrl: string;
         if (book.coverart_thumbnail) {
@@ -205,18 +206,22 @@ export default function ExploreShelf(props: any) {
         } else {
           // URL format: https://archive.org/compress/{identifier}/formats=...
           // identifier is always at index 4 after splitting by "/"
-          const identifier = book.url_zip_file.split("/")[4];
+          const identifier = (book.url_zip_file || "").split("/")[4] ?? "";
           coverUrl = encodeURI(
             `https://archive.org/services/get-item-image.php?identifier=${identifier}`
           );
         }
         // URL format: https://archive.org/compress/{identifier}/formats=...
-        const identifier = book.url_zip_file.split("/")[4];
+        const identifier = (book.url_zip_file || "").split("/")[4] ?? "";
         const reviewUrl = encodeURI(
           `https://archive.org/metadata/${identifier}/reviews/`
         );
         bookCoverURL.push(coverUrl);
         reviewsURL.push(reviewUrl);
+        } catch (e) {
+          bookCoverURL.push("");
+          reviewsURL.push("");
+        }
       });
       setBookCovers(bookCoverURL);
       setReviewsUrlList(reviewsURL);
