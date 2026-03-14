@@ -304,7 +304,7 @@ export default function AudiobookCover(props) {
             }
             style={{
               position: "absolute",
-              bottom: 0,
+              bottom: 4,
               right: 0,
               width: 30,
               height: 40,

@@ -16,7 +16,8 @@ import Colors from "../constants/Colors";
 import { useAudio } from "../hooks/AudioContext";
 
 const { width: windowWidth, height: windowHeight } = Dimensions.get("window");
-const BOTTOM_PADDING = Math.round(windowHeight * 0.012); // ~9px on 720p, ~11px on 900p
+// Extra bottom padding so controls clear the phone nav bar on all screen sizes
+const BOTTOM_PADDING = Math.round(windowHeight * 0.015) + 5;
 
 export default function MiniPlayer() {
   const colorScheme = useColorScheme();
@@ -28,68 +29,93 @@ export default function MiniPlayer() {
   }
 
   const colors = Colors[colorScheme];
-  const controlSize = Math.round(windowWidth * 0.065); // ~24px on 375px wide, scales up
+  const controlSize = Math.round(windowWidth * 0.065);
 
-  const GetDurationFormat = (ms: number) => {
-    if (typeof ms !== "number" || isNaN(ms)) return "0:00";
-    const time = ms / 1000;
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time - minutes * 60);
-    return `${minutes}:${seconds > 9 ? seconds : `0${seconds}`}`;
+  const fmt = (ms: number) => {
+    if (!ms || isNaN(ms) || ms <= 0) return "0:00";
+    const t = ms / 1000;
+    const m = Math.floor(t / 60);
+    const s = Math.floor(t % 60);
+    return `${m}:${s > 9 ? s : `0${s}`}`;
+  };
+
+  const currentMs = (audio.currentSliderPosition * audio.currentTrackInfo.duration) / 100;
+  const totalMs = audio.currentTrackInfo.duration;
+
+  const navigateToPlayer = () => {
+    const book = audio.currentBook;
+    if (book) {
+      (navigation as any).navigate("Audio", {
+        audioBookId: book.audioBookId,
+        urlRss: book.urlRss,
+        coverImage: book.coverImage,
+        numSections: book.numSections,
+        title: book.title,
+        authorFirstName: book.authorFirstName,
+        authorLastName: book.authorLastName,
+        totalTime: book.totalTime,
+        totalTimeSecs: book.totalTimeSecs,
+      });
+    }
   };
 
   return (
     <View
-      style={[
-        styles.container,
-        {
-          backgroundColor: colors.audiotrackControlsBGColor,
-        },
-      ]}
+      style={[styles.container, { backgroundColor: colors.audiotrackControlsBGColor }]}
     >
-      <Pressable
-        style={styles.infoRow}
-        onPress={() => {
-          const book = audio.currentBook;
-          if (book) {
-            (navigation as any).navigate("Audio", {
-              audioBookId: book.audioBookId,
-              urlRss: book.urlRss,
-              coverImage: book.coverImage,
-              numSections: book.numSections,
-              title: book.title,
-              authorFirstName: book.authorFirstName,
-              authorLastName: book.authorLastName,
-              totalTime: book.totalTime,
-              totalTimeSecs: book.totalTimeSecs,
-            });
-          }
-        }}
-      >
-        <Image
-          source={{ uri: audio.currentBook.coverImage }}
-          style={styles.coverImage}
-        />
-        <View style={styles.trackInfo}>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={[styles.titleText, { color: colors.text }]}
-          >
-            {audio.currentBook.title}
-          </Text>
-          <Text
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={[styles.subtitleText, { color: colors.text }]}
-          >
-            {audio.currentTrackInfo.title}
-          </Text>
-        </View>
-      </Pressable>
+      {/* Row 1: cover image + title · chapter + controls */}
+      <View style={styles.topRow}>
+        <Pressable onPress={navigateToPlayer} style={styles.coverWrap}>
+          <Image source={{ uri: audio.currentBook.coverImage }} style={styles.coverImage} />
+        </Pressable>
 
-      {/* Slider */}
-      <View style={styles.sliderRow}>
+        {/* Middle: title + chapter */}
+        <Pressable style={styles.titleWrap} onPress={navigateToPlayer}>
+          <Text numberOfLines={1} style={[styles.titleText, { color: colors.text }]}>
+            {audio.currentBook.title}
+            <Text style={[styles.chapterText, { color: colors.text }]}>
+              {" · "}{audio.currentTrackInfo.title}
+            </Text>
+          </Text>
+        </Pressable>
+
+        {/* Controls on the right */}
+        <View style={styles.controlsRow}>
+          <Button mode="text" compact onPress={() => audio.handlePrevTrack()} style={styles.ctrlBtn}>
+            <MaterialIcons name="skip-previous" size={controlSize} color={colors.buttonIconColor} />
+          </Button>
+          {audio.isLoading ? null : (
+            <Button
+              mode="text"
+              compact
+              style={styles.ctrlBtn}
+              onPress={() =>
+                audio.isPlaying
+                  ? audio.pauseAudio()
+                  : audio.isLoadedOnce
+                  ? audio.playAudio()
+                  : audio.loadTrack(
+                      audio.currentTrackIndex,
+                      audio.currentAudiotrackPositionsMs[audio.currentTrackIndex] || 0
+                    )
+              }
+            >
+              <MaterialIcons
+                name={audio.isPlaying ? "pause" : "play-arrow"}
+                size={controlSize + 4}
+                color={colors.buttonIconColor}
+              />
+            </Button>
+          )}
+          <Button mode="text" compact onPress={() => audio.handleNextTrack()} style={styles.ctrlBtn}>
+            <MaterialIcons name="skip-next" size={controlSize} color={colors.buttonIconColor} />
+          </Button>
+        </View>
+      </View>
+
+      {/* Row 2: slider with time labels */}
+      <View style={styles.sliderWrap}>
+        <Text style={[styles.timeText, { color: colors.text }]}>{fmt(currentMs)}</Text>
         <Slider
           value={audio.currentSliderPosition}
           minimumValue={0}
@@ -99,91 +125,7 @@ export default function MiniPlayer() {
           onSlidingComplete={(val) => audio.seekToPosition(val)}
           style={styles.slider}
         />
-        <View style={styles.timeRow}>
-          <Text style={[styles.timeText, { color: colors.text }]}>
-            {GetDurationFormat(
-              (audio.currentSliderPosition * audio.currentTrackInfo.duration) / 100
-            )}
-          </Text>
-          <Text style={[styles.timeText, { color: colors.text }]}>
-            {GetDurationFormat(audio.currentTrackInfo.duration)}
-          </Text>
-        </View>
-      </View>
-
-      {/* Controls */}
-      <View style={styles.controlsRow}>
-        <Button
-          mode="text"
-          compact
-          onPress={() => audio.handlePrevTrack()}
-          accessibilityLabel="Previous chapter"
-        >
-          <MaterialIcons
-            name="skip-previous"
-            size={controlSize}
-            color={colors.buttonIconColor}
-          />
-        </Button>
-        <Button
-          mode="text"
-          compact
-          onPress={() => audio.rewindTenSeconds()}
-          accessibilityLabel="Rewind 10 seconds"
-        >
-          <MaterialCommunityIcons
-            name="rewind-10"
-            size={controlSize}
-            color={colors.buttonIconColor}
-          />
-        </Button>
-        {audio.isLoading ? null : (
-          <Button
-            mode="text"
-            compact
-            onPress={() =>
-              audio.isPlaying
-                ? audio.pauseAudio()
-                : audio.isLoadedOnce
-                ? audio.playAudio()
-                : audio.loadTrack(
-                    audio.currentTrackIndex,
-                    audio.currentAudiotrackPositionsMs[audio.currentTrackIndex] || 0
-                  )
-            }
-            accessibilityLabel={audio.isPlaying ? "Pause" : "Play"}
-          >
-            <MaterialIcons
-              name={audio.isPlaying ? "pause" : "play-arrow"}
-              size={controlSize + 4}
-              color={colors.buttonIconColor}
-            />
-          </Button>
-        )}
-        <Button
-          mode="text"
-          compact
-          onPress={() => audio.forwardTenSeconds()}
-          accessibilityLabel="Forward 10 seconds"
-        >
-          <MaterialCommunityIcons
-            name="fast-forward-10"
-            size={controlSize}
-            color={colors.buttonIconColor}
-          />
-        </Button>
-        <Button
-          mode="text"
-          compact
-          onPress={() => audio.handleNextTrack()}
-          accessibilityLabel="Next chapter"
-        >
-          <MaterialIcons
-            name="skip-next"
-            size={controlSize}
-            color={colors.buttonIconColor}
-          />
-        </Button>
+        <Text style={[styles.timeText, { color: colors.text }]}>{fmt(totalMs)}</Text>
       </View>
     </View>
   );
@@ -192,51 +134,59 @@ export default function MiniPlayer() {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 8,
-    paddingTop: 4,
+    paddingTop: 6,
     paddingBottom: BOTTOM_PADDING,
     borderTopWidth: 1,
     borderTopColor: "rgba(128,128,128,0.3)",
   },
-  infoRow: {
+  topRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 2,
+  },
+  coverWrap: {
+    marginRight: 8,
   },
   coverImage: {
     width: Math.round(windowWidth * 0.1),
     height: Math.round(windowWidth * 0.1),
     borderRadius: 4,
-    marginRight: 8,
   },
-  trackInfo: {
+  titleWrap: {
     flex: 1,
+    marginRight: 4,
   },
   titleText: {
-    fontSize: Math.round(windowWidth * 0.034),
+    fontSize: Math.round(windowWidth * 0.032),
     fontWeight: "bold",
   },
-  subtitleText: {
+  chapterText: {
     fontSize: Math.round(windowWidth * 0.028),
-  },
-  sliderRow: {
-    marginBottom: 0,
-  },
-  slider: {
-    width: "100%",
-    height: 20,
-  },
-  timeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 4,
-  },
-  timeText: {
-    fontSize: 10,
+    fontWeight: "normal",
+    opacity: 0.75,
   },
   controlsRow: {
     flexDirection: "row",
-    justifyContent: "space-around",
     alignItems: "center",
-    height: Math.round(windowHeight * 0.05),
+  },
+  ctrlBtn: {
+    minWidth: 0,
+    marginHorizontal: 0,
+  },
+  sliderWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 2,
+  },
+  slider: {
+    flex: 1,
+    height: 20,
+    marginHorizontal: 4,
+  },
+  timeText: {
+    fontSize: Math.round(windowWidth * 0.028),
+    minWidth: 36,
+    textAlign: "center",
   },
 });
+
+

@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { SearchBar, Overlay } from "@rneui/themed";
 import Slider from "@react-native-community/slider";
 import ExploreShelf from "../components/ExploreShelf";
-import { View, Dimensions, Text, Switch, FlatList } from "react-native";
+import { View, Dimensions, Text, Switch, ScrollView, FlatList } from "react-native";
 import { StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getAsyncData, storeAsyncData } from "../db/database_functions";
@@ -38,7 +38,22 @@ export default function Explore(props: any) {
   const refToSearchbar = useRef(null);
   const searchBy = props.route.params.searchBy;
   const navigation = useNavigation();
-  const { bookDisplayMode, setBookDisplayMode } = useAudio();
+  const audio = useAudio();
+  const { bookDisplayMode, setBookDisplayMode } = audio;
+
+  const updateVolume = (volume: number) => {
+    const s = { ...audio.audioPlayerSettings, volume };
+    audio.setAudioPlayerSettings(s);
+    audio.applyPlayerSettings(s);
+    storeAsyncData("audioTrackSettingsTest", s);
+  };
+
+  const updateSpeed = (rate: number) => {
+    const s = { ...audio.audioPlayerSettings, rate };
+    audio.setAudioPlayerSettings(s);
+    audio.applyPlayerSettings(s);
+    storeAsyncData("audioTrackSettingsTest", s);
+  };
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -342,8 +357,10 @@ export default function Explore(props: any) {
           fullScreen={false}
           overlayStyle={{
             backgroundColor: Colors[colorScheme].overlayBackgroundColor,
+            maxHeight: windowHeight * 0.75,
           }}
         >
+          <ScrollView showsVerticalScrollIndicator={false}>
           {/* Infinite books toggle */}
           <View style={[styles.checkboxRow, { justifyContent: 'space-between', marginBottom: 8 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
@@ -423,7 +440,7 @@ export default function Explore(props: any) {
               <MaterialCommunityIcons
                 name="view-grid"
                 size={18}
-                color={bookDisplayMode === 'grid' ? '#fff' : Colors[colorScheme].buttonIconColor}
+                color={bookDisplayMode === 'grid' ? '#fff' : currentColorScheme.buttonIconColor}
               />
               {"  Grid"}
             </Button>
@@ -436,11 +453,82 @@ export default function Explore(props: any) {
               <MaterialCommunityIcons
                 name="view-list"
                 size={18}
-                color={bookDisplayMode === 'list' ? '#fff' : Colors[colorScheme].buttonIconColor}
+                color={bookDisplayMode === 'list' ? '#fff' : currentColorScheme.buttonIconColor}
               />
               {"  List"}
             </Button>
           </View>
+
+          {/* Volume */}
+          <View style={[styles.checkboxRow, { marginTop: 10 }]}>
+            <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
+              Volume: {audio.audioPlayerSettings.volume.toFixed(2)}
+            </Text>
+          </View>
+          <View style={styles.sliderControlRow}>
+            <Button
+              compact
+              mode={Colors[colorScheme].buttonMode}
+              style={{ backgroundColor: currentColorScheme.buttonBackgroundColor, minWidth: 0 }}
+              onPress={() => audio.audioPlayerSettings.volume >= 0.25 && updateVolume(Math.round((audio.audioPlayerSettings.volume - 0.25) * 100) / 100)}
+            >
+              <MaterialCommunityIcons name="volume-minus" size={26} color={currentColorScheme.buttonIconColor} />
+            </Button>
+            <Slider
+              value={audio.audioPlayerSettings.volume}
+              minimumValue={0}
+              maximumValue={1}
+              step={0.05}
+              onValueChange={(v) => updateVolume(Math.round(v * 100) / 100)}
+              style={{ flex: 1, height: 36, marginHorizontal: 6 }}
+              trackStyle={{ height: 8, backgroundColor: currentColorScheme.sliderTrackColor }}
+              thumbStyle={{ height: 12, width: 12, backgroundColor: currentColorScheme.sliderThumbColor }}
+            />
+            <Button
+              compact
+              mode={Colors[colorScheme].buttonMode}
+              style={{ backgroundColor: currentColorScheme.buttonBackgroundColor, minWidth: 0 }}
+              onPress={() => audio.audioPlayerSettings.volume <= 0.95 && updateVolume(Math.round((audio.audioPlayerSettings.volume + 0.25) * 100) / 100)}
+            >
+              <MaterialCommunityIcons name="volume-plus" size={26} color={currentColorScheme.buttonIconColor} />
+            </Button>
+          </View>
+
+          {/* Speed */}
+          <View style={[styles.checkboxRow, { marginTop: 6 }]}>
+            <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
+              Speed: {audio.audioPlayerSettings.rate}x
+            </Text>
+          </View>
+          <View style={styles.sliderControlRow}>
+            <Button
+              compact
+              mode={Colors[colorScheme].buttonMode}
+              style={{ backgroundColor: currentColorScheme.buttonBackgroundColor, minWidth: 0 }}
+              onPress={() => audio.audioPlayerSettings.rate > 0.25 && updateSpeed(Math.round((audio.audioPlayerSettings.rate - 0.25) * 100) / 100)}
+            >
+              <MaterialCommunityIcons name="tortoise" size={26} color={currentColorScheme.buttonIconColor} />
+            </Button>
+            <Slider
+              value={audio.audioPlayerSettings.rate}
+              minimumValue={0.25}
+              maximumValue={2.0}
+              step={0.25}
+              onValueChange={(v) => updateSpeed(Math.round(v * 100) / 100)}
+              style={{ flex: 1, height: 36, marginHorizontal: 6 }}
+              trackStyle={{ height: 8, backgroundColor: currentColorScheme.sliderTrackColor }}
+              thumbStyle={{ height: 12, width: 12, backgroundColor: currentColorScheme.sliderThumbColor }}
+            />
+            <Button
+              compact
+              mode={Colors[colorScheme].buttonMode}
+              style={{ backgroundColor: currentColorScheme.buttonBackgroundColor, minWidth: 0 }}
+              onPress={() => audio.audioPlayerSettings.rate < 2.0 && updateSpeed(Math.round((audio.audioPlayerSettings.rate + 0.25) * 100) / 100)}
+            >
+              <MaterialCommunityIcons name="rabbit" size={26} color={currentColorScheme.buttonIconColor} />
+            </Button>
+          </View>
+          </ScrollView>
         </Overlay>
       </View>
       {suggestionVisible ? (
@@ -486,6 +574,11 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+  },
+  sliderControlRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginTop: 4,
   },
   suggestionStyle: {
     position: "absolute",
