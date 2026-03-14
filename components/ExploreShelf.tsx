@@ -8,6 +8,7 @@ import {
   InteractionManager,
 } from "react-native";
 import { Rating } from "react-native-ratings";
+import { LinearProgress } from "@rneui/themed";
 import { useNavigation } from "@react-navigation/native";
 import React, { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { Audiobook, Review } from "../types.js";
@@ -381,6 +382,15 @@ export default function ExploreShelf(props: any) {
         windowWidth={windowWidth}
         windowHeight={windowHeight}
       />
+      {audiobooksProgress[item?.id]?.listening_progress_percent > 0 && (
+        <LinearProgress
+          color={Colors[colorScheme].audiobookProgressColor}
+          value={audiobooksProgress[item?.id]?.listening_progress_percent}
+          variant="determinate"
+          trackColor={Colors[colorScheme].audiobookProgressTrackColor}
+          animation={false}
+        />
+      )}
       {audiobooksProgress[item?.id]?.audiobook_rating > 0 ? (
         <Rating
           showRating={false}
