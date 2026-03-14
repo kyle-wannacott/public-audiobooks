@@ -358,6 +358,7 @@ export default function Explore(props: any) {
           overlayStyle={{
             backgroundColor: Colors[colorScheme].overlayBackgroundColor,
             maxHeight: windowHeight * 0.75,
+            paddingBottom: 12,
           }}
         >
           <ScrollView showsVerticalScrollIndicator={false}>
@@ -435,7 +436,7 @@ export default function Explore(props: any) {
               onPress={() => setBookDisplayMode('grid')}
               style={{ marginRight: 8 }}
               contentStyle={{ height: 36 }}
-              textColor={bookDisplayMode === 'grid' ? '#fff' : currentColorScheme.text}
+              textColor={bookDisplayMode === 'grid' ? '#fff' : '#ffffff'}
             >
               <MaterialCommunityIcons
                 name="view-grid"
@@ -448,7 +449,7 @@ export default function Explore(props: any) {
               mode={bookDisplayMode === 'list' ? 'contained' : 'outlined'}
               onPress={() => setBookDisplayMode('list')}
               contentStyle={{ height: 36 }}
-              textColor={bookDisplayMode === 'list' ? '#fff' : currentColorScheme.text}
+              textColor={bookDisplayMode === 'list' ? '#fff' : '#ffffff'}
             >
               <MaterialCommunityIcons
                 name="view-list"
@@ -529,6 +530,13 @@ export default function Explore(props: any) {
             </Button>
           </View>
           </ScrollView>
+          <Button
+            mode="contained"
+            onPress={toggleSearchOptionsOverlay}
+            style={{ marginTop: 12 }}
+          >
+            Close
+          </Button>
         </Overlay>
       </View>
       {suggestionVisible ? (

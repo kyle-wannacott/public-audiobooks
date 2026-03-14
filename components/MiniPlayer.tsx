@@ -71,45 +71,51 @@ export default function MiniPlayer() {
 
         {/* Middle: title + chapter */}
         <Pressable style={styles.titleWrap} onPress={navigateToPlayer}>
-          <Text numberOfLines={1} style={[styles.titleText, { color: colors.text }]}>
+          <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.titleText, { color: colors.text }]}>
             {audio.currentBook.title}
-            <Text style={[styles.chapterText, { color: colors.text }]}>
-              {" · "}{audio.currentTrackInfo.title}
-            </Text>
+          </Text>
+          <Text numberOfLines={1} ellipsizeMode="tail" style={[styles.chapterText, { color: colors.text, opacity: 0.75 }]}>
+            {audio.currentTrackInfo.title}
           </Text>
         </Pressable>
 
         {/* Controls on the right */}
         <View style={styles.controlsRow}>
-          <Button mode="text" compact onPress={() => audio.handlePrevTrack()} style={styles.ctrlBtn}>
-            <MaterialIcons name="skip-previous" size={controlSize} color={colors.buttonIconColor} />
-          </Button>
-          {audio.isLoading ? null : (
-            <Button
-              mode="text"
-              compact
-              style={styles.ctrlBtn}
-              onPress={() =>
-                audio.isPlaying
-                  ? audio.pauseAudio()
-                  : audio.isLoadedOnce
-                  ? audio.playAudio()
-                  : audio.loadTrack(
-                      audio.currentTrackIndex,
-                      audio.currentAudiotrackPositionsMs[audio.currentTrackIndex] || 0
-                    )
-              }
-            >
-              <MaterialIcons
-                name={audio.isPlaying ? "pause" : "play-arrow"}
-                size={controlSize + 4}
-                color={colors.buttonIconColor}
-              />
+          <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 6, marginHorizontal: 3 }}>
+            <Button mode="text" compact onPress={() => audio.handlePrevTrack()} style={styles.ctrlBtn}>
+              <MaterialIcons name="skip-previous" size={controlSize} color={colors.buttonIconColor} />
             </Button>
+          </View>
+          {audio.isLoading ? null : (
+            <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 6, marginHorizontal: 3 }}>
+              <Button
+                mode="text"
+                compact
+                style={styles.ctrlBtn}
+                onPress={() =>
+                  audio.isPlaying
+                    ? audio.pauseAudio()
+                    : audio.isLoadedOnce
+                    ? audio.playAudio()
+                    : audio.loadTrack(
+                        audio.currentTrackIndex,
+                        audio.currentAudiotrackPositionsMs[audio.currentTrackIndex] || 0
+                      )
+                }
+              >
+                <MaterialIcons
+                  name={audio.isPlaying ? "pause" : "play-arrow"}
+                  size={controlSize + 4}
+                  color={colors.buttonIconColor}
+                />
+              </Button>
+            </View>
           )}
-          <Button mode="text" compact onPress={() => audio.handleNextTrack()} style={styles.ctrlBtn}>
-            <MaterialIcons name="skip-next" size={controlSize} color={colors.buttonIconColor} />
-          </Button>
+          <View style={{ borderWidth: 1, borderColor: 'rgba(255,255,255,0.3)', borderRadius: 6, marginHorizontal: 3 }}>
+            <Button mode="text" compact onPress={() => audio.handleNextTrack()} style={styles.ctrlBtn}>
+              <MaterialIcons name="skip-next" size={controlSize} color={colors.buttonIconColor} />
+            </Button>
+          </View>
         </View>
       </View>
 

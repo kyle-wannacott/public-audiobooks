@@ -1,4 +1,4 @@
-import { View, StyleSheet, Image, Dimensions, Pressable, Text } from "react-native";
+import { View, StyleSheet, Image, Dimensions, Pressable, Text, Modal, ScrollView, ActivityIndicator, TouchableOpacity } from "react-native";
 import { ListItem, LinearProgress } from "@rneui/themed";
 import React, { useState, useEffect } from "react";
 import Colors from "../constants/Colors";
@@ -15,6 +15,7 @@ import {
 } from "../db/database_functions";
 import { useAudio } from "../hooks/AudioContext";
 import * as rssParser from "react-native-rss-parser";
+import { Rating } from "react-native-ratings";
 
 export default function AudiobookCover(props) {
   const {
@@ -37,6 +38,12 @@ export default function AudiobookCover(props) {
 
   const [avatarOnPressEnabled, setAvatarOnPressEnabled] = useState(true);
   const [isDownloaded, setIsDownloaded] = useState(false);
+  const [reviewsVisible, setReviewsVisible] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
+  const [loadingReviews, setLoadingReviews] = useState(false);
+  const [infoVisible, setInfoVisible] = useState(false);
+  const [description, setDescription] = useState('');
+  const [loadingDescription, setLoadingDescription] = useState(false);
 
   useEffect(() => {
     if (item?.id && item?.num_sections) {
@@ -152,8 +159,8 @@ export default function AudiobookCover(props) {
     }
   };
 
-  const isCurrentlyPlaying =
-    audio.currentBook?.audioBookId === String(item?.id) && audio.isPlaying;
+  const isCurrentBookLoaded = audio.currentBook?.audioBookId === String(item?.id);
+  const isCurrentlyPlaying = isCurrentBookLoaded && audio.isPlaying;
 
   const formatTime = (seconds: number): string => {
     if (!seconds || isNaN(seconds) || seconds <= 0) return '0:00';
@@ -169,12 +176,44 @@ export default function AudiobookCover(props) {
   const currentTimeSecs = progressPercent * totalSecs;
   const rating = audiobooksProgress[item?.id]?.audiobook_rating;
 
+  const openReviews = async () => {
+    const url = reviewURLS?.[index];
+    if (!url) return;
+    setReviewsVisible(true);
+    setLoadingReviews(true);
+    try {
+      const res = await fetch(url);
+      const json = await res.json();
+      setReviews(json?.result || []);
+    } catch (e) {
+      setReviews([]);
+    }
+    setLoadingReviews(false);
+  };
+
+  const openInfo = async () => {
+    setInfoVisible(true);
+    if (description) return;
+    setLoadingDescription(true);
+    try {
+      const res = await fetch(`https://librivox.org/api/feed/audiobooks/?id=${item?.id}&fields={description}&format=json`);
+      const json = await res.json();
+      const raw = json?.books?.[0]?.description || '';
+      setDescription(raw.replace(/<[^>]+>/g, '').trim());
+    } catch (e) {
+      setDescription('');
+    }
+    setLoadingDescription(false);
+  };
+
   if (displayMode === 'list') {
     return (
+      <>
       <View
         style={[
           styles.listContainer,
           { backgroundColor: Colors[colorScheme].audiobookBackgroundColor },
+          isCurrentBookLoaded && { borderWidth: 2, borderColor: Colors[colorScheme].audiobookProgressColor },
         ]}
       >
         <Pressable style={styles.listPressable} onPress={navigateToAudio}>
@@ -207,10 +246,20 @@ export default function AudiobookCover(props) {
               <Text style={[styles.listTimeText, { color: Colors[colorScheme].text }]}>
                 {formatTime(currentTimeSecs)}
               </Text>
-              {rating > 0 && (
-                <Text style={[styles.listRatingText, { color: Colors[colorScheme].text }]}>
-                  ★ {Number(rating).toFixed(1)}
-                </Text>
+              {rating > 0 ? (
+                <TouchableOpacity onPress={openReviews}>
+                  <Rating
+                    imageSize={12}
+                    ratingCount={5}
+                    startingValue={Number(rating)}
+                    showRating={false}
+                    readonly={true}
+                    type="star"
+                    tintColor={Colors[colorScheme].audiobookBackgroundColor}
+                  />
+                </TouchableOpacity>
+              ) : (
+                <Text style={[styles.listTimeText, { color: Colors[colorScheme].text, opacity: 0.5 }]}>No rating</Text>
               )}
               <Text style={[styles.listTimeText, { color: Colors[colorScheme].text }]}>
                 {item?.totaltime}
@@ -243,10 +292,54 @@ export default function AudiobookCover(props) {
           </Button>
         </View>
       </View>
+      {/* Reviews Modal */}
+      <Modal visible={reviewsVisible} transparent animationType="slide" onRequestClose={() => setReviewsVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor }]}>
+            <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>Reviews</Text>
+            {loadingReviews ? <ActivityIndicator /> : (
+              <ScrollView>
+                {reviews.length === 0 ? (
+                  <Text style={{ color: Colors[colorScheme].text, textAlign: 'center', marginTop: 20 }}>No reviews found.</Text>
+                ) : reviews.map((r: any, i: number) => (
+                  <View key={i} style={styles.reviewItem}>
+                    <Text style={[styles.reviewTitle, { color: Colors[colorScheme].text }]}>{r?.reviewtitle}</Text>
+                    <Rating imageSize={16} ratingCount={5} startingValue={Number(r?.stars)} showRating={false} readonly tintColor={Colors[colorScheme].audiobookBackgroundColor} type="star" />
+                    <Text style={[styles.reviewBody, { color: Colors[colorScheme].text }]}>{r?.reviewbody}</Text>
+                  </View>
+                ))}
+              </ScrollView>
+            )}
+            <TouchableOpacity onPress={() => setReviewsVisible(false)} style={styles.modalCloseBtn}>
+              <Text style={styles.modalCloseTxt}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      {/* Info Modal */}
+      <Modal visible={infoVisible} transparent animationType="slide" onRequestClose={() => setInfoVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor }]}>
+            <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>{item?.title}</Text>
+            <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text }]}>{item?.authors?.[0]?.first_name} {item?.authors?.[0]?.last_name}</Text>
+            <Text style={[{ color: Colors[colorScheme].text, opacity: 0.7, fontSize: 12, marginBottom: 6 }]}>{item?.totaltime} · {item?.language}</Text>
+            {loadingDescription ? <ActivityIndicator /> : (
+              <ScrollView style={{ maxHeight: 300 }}>
+                <Text style={{ color: Colors[colorScheme].text, lineHeight: 20 }}>{description || 'No description available.'}</Text>
+              </ScrollView>
+            )}
+            <TouchableOpacity onPress={() => setInfoVisible(false)} style={styles.modalCloseBtn}>
+              <Text style={styles.modalCloseTxt}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+      </>
     );
   }
 
   return (
+    <>
     <ListItem
       topDivider
       containerStyle={{
@@ -260,6 +353,7 @@ export default function AudiobookCover(props) {
           {
             backgroundColor: Colors[colorScheme].audiobookBackgroundColor,
           },
+          isCurrentBookLoaded && { borderColor: Colors[colorScheme].audiobookProgressColor, borderWidth: 2 },
         ]}
       >
         <Pressable
@@ -346,6 +440,16 @@ export default function AudiobookCover(props) {
               color={Colors[colorScheme].activityIndicatorColor}
             />
           </Button>
+
+          {/* Info button */}
+          <TouchableOpacity
+            onPress={openInfo}
+            style={{ position: 'absolute', top: 2, left: 2, zIndex: 10 }}
+          >
+            <View style={{ backgroundColor: 'rgba(0,0,0,0.5)', borderRadius: 12, width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+              <MaterialCommunityIcons name="information-outline" size={18} color="#fff" />
+            </View>
+          </TouchableOpacity>
         </Pressable>
         <LinearProgress
           color={Colors[colorScheme].audiobookProgressColor}
@@ -356,6 +460,49 @@ export default function AudiobookCover(props) {
         />
       </View>
     </ListItem>
+    {/* Reviews Modal */}
+    <Modal visible={reviewsVisible} transparent animationType="slide" onRequestClose={() => setReviewsVisible(false)}>
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor }]}>
+          <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>Reviews</Text>
+          {loadingReviews ? <ActivityIndicator /> : (
+            <ScrollView>
+              {reviews.length === 0 ? (
+                <Text style={{ color: Colors[colorScheme].text, textAlign: 'center', marginTop: 20 }}>No reviews found.</Text>
+              ) : reviews.map((r: any, i: number) => (
+                <View key={i} style={styles.reviewItem}>
+                  <Text style={[styles.reviewTitle, { color: Colors[colorScheme].text }]}>{r?.reviewtitle}</Text>
+                  <Rating imageSize={16} ratingCount={5} startingValue={Number(r?.stars)} showRating={false} readonly tintColor={Colors[colorScheme].audiobookBackgroundColor} type="star" />
+                  <Text style={[styles.reviewBody, { color: Colors[colorScheme].text }]}>{r?.reviewbody}</Text>
+                </View>
+              ))}
+            </ScrollView>
+          )}
+          <TouchableOpacity onPress={() => setReviewsVisible(false)} style={styles.modalCloseBtn}>
+            <Text style={styles.modalCloseTxt}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+    {/* Info Modal */}
+    <Modal visible={infoVisible} transparent animationType="slide" onRequestClose={() => setInfoVisible(false)}>
+      <View style={styles.modalOverlay}>
+        <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor }]}>
+          <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>{item?.title}</Text>
+          <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text }]}>{item?.authors?.[0]?.first_name} {item?.authors?.[0]?.last_name}</Text>
+          <Text style={[{ color: Colors[colorScheme].text, opacity: 0.7, fontSize: 12, marginBottom: 6 }]}>{item?.totaltime} · {item?.language}</Text>
+          {loadingDescription ? <ActivityIndicator /> : (
+            <ScrollView style={{ maxHeight: 300 }}>
+              <Text style={{ color: Colors[colorScheme].text, lineHeight: 20 }}>{description || 'No description available.'}</Text>
+            </ScrollView>
+          )}
+          <TouchableOpacity onPress={() => setInfoVisible(false)} style={styles.modalCloseBtn}>
+            <Text style={styles.modalCloseTxt}>Close</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+    </>
   );
 }
 
@@ -383,7 +530,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 6,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(128,128,128,0.2)",
+    borderBottomColor: "rgba(128,128,128,0.5)",
   },
   listPressable: {
     flexDirection: "row",
@@ -432,5 +579,54 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingLeft: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    justifyContent: 'flex-end',
+  },
+  modalContainer: {
+    borderTopLeftRadius: 16,
+    borderTopRightRadius: 16,
+    padding: 16,
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 17,
+    fontWeight: 'bold',
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+    opacity: 0.8,
+    marginBottom: 4,
+  },
+  reviewItem: {
+    paddingVertical: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(128,128,128,0.3)',
+  },
+  reviewTitle: {
+    fontWeight: 'bold',
+    fontSize: 13,
+    marginBottom: 4,
+  },
+  reviewBody: {
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 6,
+    opacity: 0.85,
+  },
+  modalCloseBtn: {
+    marginTop: 14,
+    paddingVertical: 12,
+    alignItems: 'center',
+    backgroundColor: 'rgba(128,128,128,0.2)',
+    borderRadius: 8,
+  },
+  modalCloseTxt: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 15,
   },
 });

@@ -169,7 +169,7 @@ function BookshelfTabs() {
       />
       <BookshelfTab.Screen
         initialParams={{ sqlQuery: inProgressQuery }}
-        name="In progress"
+        name="Progress"
         component={Bookshelf}
       />
       <BookshelfTab.Screen
