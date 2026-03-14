@@ -11,6 +11,7 @@ import Slider from "@react-native-community/slider";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
 import { useAudio } from "../hooks/AudioContext";
@@ -21,8 +22,9 @@ export default function MiniPlayer() {
   const colorScheme = useColorScheme();
   const navigation = useNavigation();
   const audio = useAudio();
+  const insets = useSafeAreaInsets();
 
-  if (!audio.showMiniPlayer || !audio.currentBook) {
+  if (!audio.showMiniPlayer || !audio.currentBook || !audio.miniPlayerEnabled) {
     return null;
   }
 
@@ -39,7 +41,13 @@ export default function MiniPlayer() {
 
   return (
     <View
-      style={[styles.container, { backgroundColor: colors.audiotrackControlsBGColor }]}
+      style={[
+        styles.container,
+        {
+          backgroundColor: colors.audiotrackControlsBGColor,
+          paddingBottom: insets.bottom,
+        },
+      ]}
     >
       <Pressable
         style={styles.infoRow}
@@ -136,7 +144,14 @@ export default function MiniPlayer() {
             mode="text"
             compact
             onPress={() =>
-              audio.isPlaying ? audio.pauseAudio() : audio.isLoadedOnce ? audio.playAudio() : audio.loadTrack(audio.currentTrackIndex, audio.currentAudiotrackPositionsMs[audio.currentTrackIndex] || 0)
+              audio.isPlaying
+                ? audio.pauseAudio()
+                : audio.isLoadedOnce
+                ? audio.playAudio()
+                : audio.loadTrack(
+                    audio.currentTrackIndex,
+                    audio.currentAudiotrackPositionsMs[audio.currentTrackIndex] || 0
+                  )
             }
             accessibilityLabel={audio.isPlaying ? "Pause" : "Play"}
           >
@@ -179,7 +194,7 @@ export default function MiniPlayer() {
 const styles = StyleSheet.create({
   container: {
     paddingHorizontal: 8,
-    paddingVertical: 4,
+    paddingTop: 4,
     borderTopWidth: 1,
     borderTopColor: "rgba(128,128,128,0.3)",
   },

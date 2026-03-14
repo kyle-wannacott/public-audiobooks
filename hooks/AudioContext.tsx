@@ -71,6 +71,8 @@ interface AudioContextType {
   applyPlayerSettings: (settings: any) => void;
   // Mini player visibility
   showMiniPlayer: boolean;
+  miniPlayerEnabled: boolean;
+  setMiniPlayerEnabled: (enabled: boolean) => void;
 }
 
 const AudioContext = createContext<AudioContextType | null>(null);
@@ -120,11 +122,20 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   });
 
   const [showMiniPlayer, setShowMiniPlayer] = useState(false);
+  const [miniPlayerEnabled, setMiniPlayerEnabledState] = useState(true);
+
+  const setMiniPlayerEnabled = useCallback((enabled: boolean) => {
+    setMiniPlayerEnabledState(enabled);
+    storeAsyncData("miniPlayerEnabled", enabled);
+  }, []);
 
   // Load saved audio settings on mount
   useEffect(() => {
     getAsyncData("audioTrackSettingsTest").then((saved: any) => {
       if (saved) setAudioPlayerSettings(saved);
+    });
+    getAsyncData("miniPlayerEnabled").then((saved: any) => {
+      if (saved !== null && saved !== undefined) setMiniPlayerEnabledState(saved);
     });
     getAsyncData("audioModeSettings").then((saved: any) => {
       if (saved) {
@@ -159,7 +170,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       if (statusSubscription.current) {
         statusSubscription.current.remove();
       }
-      sound.current.clearLockScreenControls();
+      if (typeof sound.current.clearLockScreenControls === 'function') {
+        sound.current.clearLockScreenControls();
+      }
       sound.current.release();
     };
   }, []);
@@ -282,15 +295,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
               duration: sound.current.duration * 1000,
             });
 
-            sound.current.updateLockScreenMetadata({
-              title:
-                book.chapters[nextIdx]?.section_number +
-                ". " +
-                book.chapters[nextIdx]?.title,
-              artist: `${book.authorFirstName} ${book.authorLastName}`,
-              albumTitle: book.title,
-              artworkUrl: book.coverImage,
-            });
+            if (typeof sound.current.updateLockScreenMetadata === 'function') {
+              sound.current.updateLockScreenMetadata({
+                title:
+                  book.chapters[nextIdx]?.section_number +
+                  ". " +
+                  book.chapters[nextIdx]?.title,
+                artist: `${book.authorFirstName} ${book.authorLastName}`,
+                albumTitle: book.title,
+                artworkUrl: book.coverImage,
+              });
+            }
 
             sound.current.play();
             setIsPlaying(true);
@@ -462,15 +477,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Lock screen / notification metadata
-        sound.current.setActiveForLockScreen(true, {
-          title: chapterTitle,
-          artist: `${book.authorFirstName} ${book.authorLastName}`,
-          albumTitle: book.title,
-          artworkUrl: book.coverImage,
-        }, {
-          showSeekForward: true,
-          showSeekBackward: true,
-        });
+        if (typeof sound.current.setActiveForLockScreen === 'function') {
+          sound.current.setActiveForLockScreen(true, {
+            title: chapterTitle,
+            artist: `${book.authorFirstName} ${book.authorLastName}`,
+            albumTitle: book.title,
+            artworkUrl: book.coverImage,
+          }, {
+            showSeekForward: true,
+            showSeekBackward: true,
+          });
+        }
 
         setIsLoading(false);
         setIsLoadedOnce(true);
@@ -632,6 +649,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         seekToPosition,
         applyPlayerSettings,
         showMiniPlayer,
+        miniPlayerEnabled,
+        setMiniPlayerEnabled,
       }}
     >
       {children}

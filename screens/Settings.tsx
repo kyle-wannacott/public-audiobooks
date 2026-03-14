@@ -6,11 +6,13 @@ import Colors from "../constants/Colors";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { storeAsyncData, getAsyncData } from "../db/database_functions";
+import { useAudio } from "../hooks/AudioContext";
 
 const UserSettings = () => {
   const colorScheme = useColorScheme();
   const currentColorScheme = Colors[colorScheme];
   const insets = useSafeAreaInsets();
+  const audio = useAudio();
   const [audioModeSettings, setAudioModeSettings] = useState({
     interruptionModeAndroid: 1,
     staysActiveInBackground: true,
@@ -96,6 +98,29 @@ const UserSettings = () => {
               styles.audiobookSettingsSubHeading,
               { color: currentColorScheme.settingsSubSectionTitles },
             ]}
+          />
+          <SettingsList.Item
+            titleStyle={{ color: currentColorScheme.settingsListText }}
+            icon={
+              <MaterialCommunityIcons
+                name="dock-bottom"
+                size={50}
+                color={"#4169E1"}
+              />
+            }
+            hasNavArrow={false}
+            title="Show mini player"
+            itemWidth={50}
+            switchState={audio.miniPlayerEnabled}
+            switchOnValueChange={() => audio.setMiniPlayerEnabled(!audio.miniPlayerEnabled)}
+            hasSwitch={true}
+            onPress={() =>
+              Alert.alert(
+                "Show mini player",
+                "Show a mini player at the bottom of the screen while audio is playing, so you can control playback without opening the full player. Default: On",
+                [{ text: "Close", style: "cancel" }]
+              )
+            }
           />
           {/*<SettingsList.Item
             icon={
