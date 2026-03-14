@@ -73,6 +73,9 @@ interface AudioContextType {
   showMiniPlayer: boolean;
   miniPlayerEnabled: boolean;
   setMiniPlayerEnabled: (enabled: boolean) => void;
+  // Display mode: grid (2-col) or list (1-col full-width rows)
+  bookDisplayMode: 'grid' | 'list';
+  setBookDisplayMode: (mode: 'grid' | 'list') => void;
 }
 
 const AudioContext = createContext<AudioContextType | null>(null);
@@ -129,6 +132,13 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     storeAsyncData("miniPlayerEnabled", enabled);
   }, []);
 
+  const [bookDisplayMode, setBookDisplayModeState] = useState<'grid' | 'list'>('grid');
+
+  const setBookDisplayMode = useCallback((mode: 'grid' | 'list') => {
+    setBookDisplayModeState(mode);
+    storeAsyncData("bookDisplayMode", mode);
+  }, []);
+
   // Load saved audio settings on mount
   useEffect(() => {
     getAsyncData("audioTrackSettingsTest").then((saved: any) => {
@@ -136,6 +146,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
     });
     getAsyncData("miniPlayerEnabled").then((saved: any) => {
       if (saved !== null && saved !== undefined) setMiniPlayerEnabledState(saved);
+    });
+    getAsyncData("bookDisplayMode").then((saved: any) => {
+      if (saved === 'grid' || saved === 'list') setBookDisplayModeState(saved);
     });
     getAsyncData("audioModeSettings").then((saved: any) => {
       if (saved) {
@@ -651,6 +664,8 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         showMiniPlayer,
         miniPlayerEnabled,
         setMiniPlayerEnabled,
+        bookDisplayMode,
+        setBookDisplayMode,
       }}
     >
       {children}

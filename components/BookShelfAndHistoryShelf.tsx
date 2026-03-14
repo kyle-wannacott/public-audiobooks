@@ -30,11 +30,14 @@ import {
   RatingCacheEntry,
 } from "../db/database_functions";
 import AudiobookCover from "./AudiobookCoverHistoryAndBookshelf";
+import { useAudio } from "../hooks/AudioContext";
 
 const db = openDatabase();
+const MINI_PLAYER_CONTENT_HEIGHT = 130;
 
 export default function BookShelfAndHistoryShelf(props: any) {
   const colorScheme = useColorScheme();
+  const { bookDisplayMode, showMiniPlayer, miniPlayerEnabled } = useAudio();
   const [audiobooksProgress, setAudiobooksProgress] = useState({});
   const [ratingsCache, setRatingsCache] = useState<Record<string, RatingCacheEntry>>({});
   const [avatarOnPressEnabled, setAvatarOnPressEnabled] = useState(true);
@@ -138,9 +141,10 @@ export default function BookShelfAndHistoryShelf(props: any) {
         resizeCoverImageHeight={resizeCoverImageHeight}
         windowWidth={windowWidth}
         windowHeight={windowHeight}
+        displayMode={bookDisplayMode}
         onAfterShelveToggle={() => props.getShelvedBooks(pickerAndQueryState)}
       />
-      {audiobooksProgress[item.audiobook_id]?.audiobook_rating > 0 ? (
+      {bookDisplayMode === 'grid' && audiobooksProgress[item.audiobook_id]?.audiobook_rating > 0 ? (
         <Rating
           showRating={false}
           imageSize={20}
@@ -149,22 +153,24 @@ export default function BookShelfAndHistoryShelf(props: any) {
           readonly={true}
           tintColor={Colors[colorScheme].ratingBackgroundColor}
         />
-      ) : audiobooksProgress[item.audiobook_id] ? (
+      ) : bookDisplayMode === 'grid' && audiobooksProgress[item.audiobook_id] ? (
         <Text style={styles.noRatingText}>No rating</Text>
       ) : undefined}
-      <AudiobookAccordionList
-        accordionTitle={selectAccordionPickerTitle(
-          pickerAndQueryState.pickerIndex,
-          item
-        )}
-        audiobookTitle={item?.audiobook_title}
-        audiobookAuthorFirstName={item?.audiobook_author_first_name}
-        audiobookAuthorLastName={item?.audiobook_author_last_name}
-        audiobookTotalTime={item?.audiobook_total_time}
-        audiobookCopyrightYear={item?.audiobook_copyright_year}
-        audiobookGenres={item?.audiobook_genres}
-        audiobookLanguage={item?.audiobook_language}
-      />
+      {bookDisplayMode === 'grid' && (
+        <AudiobookAccordionList
+          accordionTitle={selectAccordionPickerTitle(
+            pickerAndQueryState.pickerIndex,
+            item
+          )}
+          audiobookTitle={item?.audiobook_title}
+          audiobookAuthorFirstName={item?.audiobook_author_first_name}
+          audiobookAuthorLastName={item?.audiobook_author_last_name}
+          audiobookTotalTime={item?.audiobook_total_time}
+          audiobookCopyrightYear={item?.audiobook_copyright_year}
+          audiobookGenres={item?.audiobook_genres}
+          audiobookLanguage={item?.audiobook_language}
+        />
+      )}
     </View>
   );
 
@@ -212,6 +218,7 @@ export default function BookShelfAndHistoryShelf(props: any) {
   }, [navigation]);
 
   if (!props.loadingHistory) {
+    const miniPlayerOffset = (showMiniPlayer && miniPlayerEnabled) ? MINI_PLAYER_CONTENT_HEIGHT : 0;
     return (
       <View>
         <PickerForHistoryAndBookShelf
@@ -227,15 +234,16 @@ export default function BookShelfAndHistoryShelf(props: any) {
             styles.flatListStyle,
             {
               backgroundColor: Colors[colorScheme].background,
-              height: windowHeight - props.shelfHeightOffset,
+              height: windowHeight - props.shelfHeightOffset - miniPlayerOffset,
             },
           ]}
         >
           <FlatList
+            key={bookDisplayMode}
             data={props.audiobookHistory}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
-            numColumns={2}
+            numColumns={bookDisplayMode === 'grid' ? 2 : 1}
             removeClippedSubviews={true}
             maxToRenderPerBatch={6}
             initialNumToRender={6}

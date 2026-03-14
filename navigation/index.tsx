@@ -4,7 +4,7 @@
  *
  */
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { createBottomTabNavigator, BottomTabBar } from "@react-navigation/bottom-tabs";
 import {
   NavigationContainer,
   DefaultTheme,
@@ -12,7 +12,7 @@ import {
 } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
-import { ColorSchemeName, View } from "react-native";
+import { ColorSchemeName } from "react-native";
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import { RootStackParamList, RootTabParamList } from "../types";
@@ -187,76 +187,82 @@ function BookshelfTabs() {
 
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
+  const insets = useSafeAreaInsets();
 
   return (
-    <View style={{ flex: 1 }}>
-      <BottomTab.Navigator
-        initialRouteName="Explore"
-        screenOptions={({ route }) => ({
-          headerShown: false,
-          tabBarStyle: {
-            backgroundColor: Colors[colorScheme].tabBackgroundColor,
-          },
-          tabBarItemStyle: { paddingVertical: 4 },
-          tabBarIconStyle: { flex: 1 },
-          tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
-          tabBarIcon: ({ focused, color, size }) => {
-            size = 32;
-            let iconName;
-            switch (route.name) {
-              case "Explore":
-                iconName = focused ? "book-search" : "book-search";
-                break;
-              case "Bookshelf":
-                iconName = focused ? "bookshelf" : "bookshelf";
-                break;
-              case "History":
-                iconName = focused ? "history" : "history";
-                break;
-              case "Settings":
-                iconName = focused ? "account-cog" : "account-cog";
-                break;
-            }
-            return (
-              <MaterialCommunityIcons name={iconName} size={size} color={color} />
-            );
-          },
-          tabBarActiveTintColor: Colors[colorScheme].tabIconSelected,
-          tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
-        })}
-      >
-        <BottomTab.Screen
-          name="Explore"
-          component={SearchTopTabs}
-          options={{
-            tabBarLabel: "Explore",
-          }}
-        />
-        <BottomTab.Screen
-          name="Bookshelf"
-          component={BookshelfTabs}
-          options={{
-            tabBarLabel: "Bookshelf",
-            unmountOnBlur: false,
-          }}
-        />
-        <BottomTab.Screen
-          name="History"
-          component={History}
-          options={{
-            tabBarLabel: "History",
-            unmountOnBlur: false,
-          }}
-        />
-        <BottomTab.Screen
-          name="Settings"
-          component={Settings}
-          options={{
-            tabBarLabel: "Settings",
-          }}
-        />
-      </BottomTab.Navigator>
-      <MiniPlayer />
-    </View>
+    <BottomTab.Navigator
+      initialRouteName="Explore"
+      tabBar={(tabProps) => (
+        <>
+          <MiniPlayer />
+          <BottomTabBar {...tabProps} />
+        </>
+      )}
+      screenOptions={({ route }) => ({
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: Colors[colorScheme].tabBackgroundColor,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom,
+        },
+        tabBarItemStyle: { paddingVertical: 4 },
+        tabBarIconStyle: { flex: 1 },
+        tabBarLabelStyle: { fontSize: 12, marginBottom: 4 },
+        tabBarIcon: ({ focused, color, size }) => {
+          size = 32;
+          let iconName;
+          switch (route.name) {
+            case "Explore":
+              iconName = focused ? "book-search" : "book-search";
+              break;
+            case "Bookshelf":
+              iconName = focused ? "bookshelf" : "bookshelf";
+              break;
+            case "History":
+              iconName = focused ? "history" : "history";
+              break;
+            case "Settings":
+              iconName = focused ? "account-cog" : "account-cog";
+              break;
+          }
+          return (
+            <MaterialCommunityIcons name={iconName} size={size} color={color} />
+          );
+        },
+        tabBarActiveTintColor: Colors[colorScheme].tabIconSelected,
+        tabBarInactiveTintColor: Colors[colorScheme].tabIconDefault,
+      })}
+    >
+      <BottomTab.Screen
+        name="Explore"
+        component={SearchTopTabs}
+        options={{
+          tabBarLabel: "Explore",
+        }}
+      />
+      <BottomTab.Screen
+        name="Bookshelf"
+        component={BookshelfTabs}
+        options={{
+          tabBarLabel: "Bookshelf",
+          unmountOnBlur: false,
+        }}
+      />
+      <BottomTab.Screen
+        name="History"
+        component={History}
+        options={{
+          tabBarLabel: "History",
+          unmountOnBlur: false,
+        }}
+      />
+      <BottomTab.Screen
+        name="Settings"
+        component={Settings}
+        options={{
+          tabBarLabel: "Settings",
+        }}
+      />
+    </BottomTab.Navigator>
   );
 }

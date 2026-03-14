@@ -33,6 +33,7 @@ import {
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
 import { Pressable } from "react-native";
+import { useAudio } from "../hooks/AudioContext";
 const db = openDatabase();
 
 // Memoized item component — only re-renders when its specific book's
@@ -42,6 +43,7 @@ const ExploreBookItem = React.memo(({
   resizeCoverImageWidth, resizeCoverImageHeight, windowWidth, windowHeight,
   colorScheme, audiobooksProgress, setAudiobooksProgress,
   addAudiobookToHistory, getAverageAudiobookReview, bookCovers, reviewURLS,
+  displayMode,
 }: any) => (
   <View>
     <AudiobookCover
@@ -58,8 +60,9 @@ const ExploreBookItem = React.memo(({
       resizeCoverImageHeight={resizeCoverImageHeight}
       windowWidth={windowWidth}
       windowHeight={windowHeight}
+      displayMode={displayMode}
     />
-    {progress?.audiobook_rating > 0 ? (
+    {displayMode === 'grid' && progress?.audiobook_rating > 0 ? (
       <Rating
         showRating={false}
         imageSize={20}
@@ -68,19 +71,21 @@ const ExploreBookItem = React.memo(({
         readonly={true}
         tintColor={Colors[colorScheme].ratingBackgroundColor}
       />
-    ) : ratingFetched ? (
+    ) : displayMode === 'grid' && ratingFetched ? (
       <Text style={exploreItemStyles.noRatingText}>No rating</Text>
     ) : null}
-    <AudiobookAccordionList
-      accordionTitle={item?.title}
-      audiobookTitle={item?.title}
-      audiobookAuthorFirstName={item?.authors[0]?.first_name}
-      audiobookAuthorLastName={item?.authors[0]?.last_name}
-      audiobookTotalTime={item?.totaltime}
-      audiobookCopyrightYear={item?.copyright_year}
-      audiobookGenres={JSON.stringify(item?.genres)}
-      audiobookLanguage={item?.language}
-    />
+    {displayMode === 'grid' && (
+      <AudiobookAccordionList
+        accordionTitle={item?.title}
+        audiobookTitle={item?.title}
+        audiobookAuthorFirstName={item?.authors[0]?.first_name}
+        audiobookAuthorLastName={item?.authors[0]?.last_name}
+        audiobookTotalTime={item?.totaltime}
+        audiobookCopyrightYear={item?.copyright_year}
+        audiobookGenres={JSON.stringify(item?.genres)}
+        audiobookLanguage={item?.language}
+      />
+    )}
   </View>
 ));
 
@@ -95,6 +100,7 @@ const exploreItemStyles = StyleSheet.create({
 
 export default function ExploreShelf(props: any) {
   const colorScheme = useColorScheme();
+  const { bookDisplayMode } = useAudio();
   const [loadingAudioBooks, setLoadingAudioBooks] = useState(true);
   const [data, setAudiobooks] = useState<any>([]);
   const [bookCovers, setBookCovers] = useState<any[]>([]);
@@ -463,18 +469,20 @@ export default function ExploreShelf(props: any) {
       getAverageAudiobookReview={getAverageAudiobookReview}
       bookCovers={bookCovers}
       reviewURLS={reviewURLS}
+      displayMode={bookDisplayMode}
     />
   ), [audiobooksProgress, ratingsFetched, bookCovers, reviewURLS, colorScheme,
-      resizeCoverImageWidth, resizeCoverImageHeight, windowWidth, windowHeight]);
+      resizeCoverImageWidth, resizeCoverImageHeight, windowWidth, windowHeight, bookDisplayMode]);
 
   if (!loadingAudioBooks) {
     return (
       <View style={styles.audiobookContainer}>
         <FlatList
+          key={bookDisplayMode}
           data={data.books}
           keyExtractor={keyExtractor}
           renderItem={renderItem}
-          numColumns={2}
+          numColumns={bookDisplayMode === 'grid' ? 2 : 1}
           extraData={audiobooksProgress}
           removeClippedSubviews={true}
           maxToRenderPerBatch={6}

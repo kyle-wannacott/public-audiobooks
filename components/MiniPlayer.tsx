@@ -11,7 +11,6 @@ import Slider from "@react-native-community/slider";
 import { MaterialIcons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { Button } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
 import { useAudio } from "../hooks/AudioContext";
@@ -22,7 +21,6 @@ export default function MiniPlayer() {
   const colorScheme = useColorScheme();
   const navigation = useNavigation();
   const audio = useAudio();
-  const insets = useSafeAreaInsets();
 
   if (!audio.showMiniPlayer || !audio.currentBook || !audio.miniPlayerEnabled) {
     return null;
@@ -45,7 +43,6 @@ export default function MiniPlayer() {
         styles.container,
         {
           backgroundColor: colors.audiotrackControlsBGColor,
-          paddingBottom: insets.bottom,
         },
       ]}
     >

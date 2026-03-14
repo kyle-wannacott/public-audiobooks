@@ -19,7 +19,10 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["audio"]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -27,7 +30,12 @@
         "backgroundColor": "#000000"
       },
       "package": "com.leewannacott.libriaudire",
-      "versionCode": 9
+      "versionCode": 9,
+      "permissions": [
+        "android.permission.WAKE_LOCK",
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+      ]
     },
     "web": {
       "favicon": "./assets/images/favicon.png"
@@ -42,7 +50,7 @@
       "expo-font",
       "expo-sqlite",
       "expo-web-browser",
-      ["expo-audio", { "enableBackgroundPlayback": true }]
+      ["expo-audio", { "enableBackgroundRecording": false }]
     ]
   }
 }

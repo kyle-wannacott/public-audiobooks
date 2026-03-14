@@ -16,6 +16,7 @@ import { Suggestion } from "../types";
 import { LinearProgress } from "@rneui/themed";
 import { FlashList } from "@shopify/flash-list";
 import Fuse from "fuse.js";
+import { useAudio } from "../hooks/AudioContext";
 
 export default function Explore(props: any) {
   const colorScheme = useColorScheme();
@@ -36,6 +37,7 @@ export default function Explore(props: any) {
   const refToSearchbar = useRef(null);
   const searchBy = props.route.params.searchBy;
   const navigation = useNavigation();
+  const { bookDisplayMode, setBookDisplayMode } = useAudio();
 
   React.useEffect(() => {
     const unsubscribe = navigation.addListener("focus", () => {
@@ -404,6 +406,40 @@ export default function Explore(props: any) {
                 size={30}
                 color={Colors[colorScheme].buttonIconColor}
               />
+            </Button>
+          </View>
+
+          {/* Display mode toggle */}
+          <View style={styles.checkboxRow}>
+            <Text style={{ fontSize: 15, color: currentColorScheme.text, marginRight: 8 }}>
+              Display:
+            </Text>
+            <Button
+              mode={bookDisplayMode === 'grid' ? 'contained' : 'outlined'}
+              onPress={() => setBookDisplayMode('grid')}
+              style={{ marginRight: 8 }}
+              contentStyle={{ height: 36 }}
+              labelStyle={{ fontSize: 12 }}
+            >
+              <MaterialCommunityIcons
+                name="view-grid"
+                size={18}
+                color={bookDisplayMode === 'grid' ? '#fff' : Colors[colorScheme].buttonIconColor}
+              />
+              {"  Grid"}
+            </Button>
+            <Button
+              mode={bookDisplayMode === 'list' ? 'contained' : 'outlined'}
+              onPress={() => setBookDisplayMode('list')}
+              contentStyle={{ height: 36 }}
+              labelStyle={{ fontSize: 12 }}
+            >
+              <MaterialCommunityIcons
+                name="view-list"
+                size={18}
+                color={bookDisplayMode === 'list' ? '#fff' : Colors[colorScheme].buttonIconColor}
+              />
+              {"  List"}
             </Button>
           </View>
         </Overlay>
