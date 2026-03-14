@@ -102,6 +102,7 @@ function SearchTopTabs() {
       <ExploreTopTab.Navigator
         screenOptions={{
           swipeEnabled: false,
+          animationEnabled: false,
           lazy: false,
           tabBarStyle: { paddingTop: insets.top },
           tabBarIndicatorStyle: { height: 3 },
@@ -158,7 +159,7 @@ function BookshelfTabs() {
   const finishedQuery = `select * from ${audiobookHistoryTableName} inner join ${audiobookProgressTableName} on ${audiobookProgressTableName}.audiobook_id = ${audiobookHistoryTableName}.audiobook_id where ${audiobookProgressTableName}.listening_progress_percent > 0.99`;
 
   return (
-    <BookshelfTab.Navigator screenOptions={{ swipeEnabled: false, tabBarStyle: { paddingTop: insets.top } }}>
+    <BookshelfTab.Navigator screenOptions={{ swipeEnabled: false, animationEnabled: false, tabBarStyle: { paddingTop: insets.top } }}>
       <BookshelfTab.Screen
         initialParams={{ sqlQuery: starredQuery }}
         name="Starred"
