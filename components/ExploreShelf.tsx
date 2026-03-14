@@ -8,8 +8,8 @@ import {
   InteractionManager,
 } from "react-native";
 import { Rating } from "react-native-ratings";
-import { useNavigation } from "@react-navigation/native";
-import React, { useState, useEffect, useRef, useLayoutEffect, useCallback } from "react";
+import { useFocusEffect } from "@react-navigation/native";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Audiobook, Review } from "../types.js";
 
 import AudiobookAccordionList from "../components/audiobookAccordionList";
@@ -400,9 +400,12 @@ export default function ExploreShelf(props: any) {
     };
   }, [reviewURLS]);
 
-  const navigation = useNavigation();
-  useEffect(() => {
-    const unsubscribe = navigation.addListener("focus", () => {
+  // Reload progress & ratings from DB whenever this tab comes into focus —
+  // this picks up changes made in Bookshelf (star/unstar) or Audiotracks.
+  // useFocusEffect fires reliably for both nested tab switches and
+  // returning from parent tabs (e.g. Bookshelf → Explore).
+  useFocusEffect(
+    useCallback(() => {
       const query = `select * from ${audiobookProgressTableName}`;
       db.transaction((tx) => {
         tx.executeSql(`${query}`, [], (_, { rows }) => {
@@ -429,9 +432,8 @@ export default function ExploreShelf(props: any) {
           });
         });
       }, undefined);
-    });
-    return unsubscribe;
-  }, [navigation]);
+    }, [])
+  );
 
   const windowWidth = Dimensions.get("window").width;
   const windowHeight = Dimensions.get("window").height;
