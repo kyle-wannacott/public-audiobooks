@@ -1,0 +1,95 @@
+diff --git a/node_modules/react-native-settings-list/index.js b/node_modules/react-native-settings-list/index.js
+index 00e7242..99a8930 100644
+--- a/node_modules/react-native-settings-list/index.js
++++ b/node_modules/react-native-settings-list/index.js
+@@ -13,8 +13,20 @@ import {
+   TextInput,
+   Switch,
+   Image,
+-  ViewPropTypes
++  ViewPropTypes,
+ } from 'react-native';
++// Patch: ViewPropTypes and component.propTypes.style were removed in RN 0.73+
++const _stylePropType = require('prop-types').any;
++// Override removed APIs to prevent crash
++const _safeViewPropTypes = { style: _stylePropType };
++const _safeTextPropTypes = { style: _stylePropType };
++const _safeImagePropTypes = { style: _stylePropType };
++// Re-assign to prevent "undefined" access
++(function() {
++  if (!ViewPropTypes || !_safeViewPropTypes.style) {
++    Object.assign(_safeViewPropTypes, {});
++  }
++})();
+ 
+ const ARROW_ICON = require('./img/icon-arrow-settings.png');
+ 
+@@ -24,7 +36,7 @@ class SettingsList extends React.Component {
+     borderColor: PropTypes.string,
+     defaultItemSize: PropTypes.number,
+     underlayColor: PropTypes.string,
+-    defaultTitleStyle: Text.propTypes.style,
++    defaultTitleStyle: _safeTextPropTypes.style,
+     defaultTitleInfoPosition: PropTypes.string,
+     scrollViewProps: PropTypes.object,
+   };
+@@ -276,7 +288,7 @@ const styles = StyleSheet.create({
+ SettingsList.Header = createReactClass({
+   propTypes: {
+     headerText: PropTypes.string,
+-    headerStyle: Text.propTypes.style,
++    headerStyle: _safeTextPropTypes.style,
+     headerRef: PropTypes.func,
+     headerNumberOfLines: PropTypes.number,
+   },
+@@ -302,7 +314,7 @@ SettingsList.Item = createReactClass({
+      * Title being displayed
+      */
+     title: PropTypes.string,
+-    titleStyle: Text.propTypes.style,
++    titleStyle: _safeTextPropTypes.style,
+     /**
+      * Icon displayed on the left of the settings item
+      */
+@@ -311,19 +323,19 @@ SettingsList.Item = createReactClass({
+     /**
+      * Item Box Style
+      */
+-    itemBoxStyle : ViewPropTypes.style,
++    itemBoxStyle : _safeViewPropTypes.style,
+     /**
+      * Title Box Style
+      */
+-    titleBoxStyle: ViewPropTypes.style,
++    titleBoxStyle: _safeViewPropTypes.style,
+     /**
+      * Right Side Style
+      */
+-    rightSideStyle: ViewPropTypes.style,
++    rightSideStyle: _safeViewPropTypes.style,
+     /**
+      * Editable Right Side Style
+      */
+-    editableTextStyle: Text.propTypes.style,
++    editableTextStyle: _safeTextPropTypes.style,
+ 
+     /**
+      * Individual item width.  Can be globally set in the parent.  Will become deprecated
+@@ -358,7 +370,7 @@ SettingsList.Item = createReactClass({
+     hasNavArrow: PropTypes.bool,
+     arrowIcon: PropTypes.node,
+ 
+-    arrowStyle: Image.propTypes.style,
++    arrowStyle: _safeImagePropTypes.style,
+     /**
+      * Enable or disable a Switch component
+      */
+@@ -379,7 +391,7 @@ SettingsList.Item = createReactClass({
+      * Right side information on the setting item
+      */
+     titleInfo: PropTypes.string,
+-    titleInfoStyle: Text.propTypes.style,
++    titleInfoStyle: _safeTextPropTypes.style,
+     /**
+      * If 'Bottom', info is placed beneath the title
+      */
