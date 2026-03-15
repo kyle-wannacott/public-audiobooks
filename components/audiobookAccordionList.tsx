@@ -136,7 +136,7 @@ function AudiobookAccordionList(props: any) {
             ></MaterialIconCommunity>
             {": "}
             <Text style={{ textDecorationLine: 'underline' }}>
-              {JSON.parse(props?.audiobookGenres).map((genre) => {
+              {JSON.parse(props?.audiobookGenres).map((genre: any) => {
                 return `${genre?.name} `;
               })}
             </Text>
