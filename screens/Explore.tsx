@@ -374,6 +374,7 @@ export default function Explore(props: any) {
           </View>
         ) : (searchBy === 'author' && userInputEntered) ? (
           <View style={styles.pillRow}>
+            {/* ← All letters */}
             <TouchableOpacity
               onPress={() => { setUserInputEntered(''); setSearch(''); setSelectedLetter(''); }}
               style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
@@ -383,6 +384,18 @@ export default function Explore(props: any) {
                 A–Z Authors
               </Text>
             </TouchableOpacity>
+            {/* Letter pill — clickable, returns to that letter's author list */}
+            {selectedLetter ? (
+              <TouchableOpacity
+                onPress={() => { setUserInputEntered(''); setSearch(''); }}
+                style={[styles.backPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor }]}
+              >
+                <Text style={[styles.backPillText, { color: Colors[colorScheme].text }]}>
+                  {selectedLetter}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+            {/* Current author name — non-clickable */}
             <View style={[styles.infoPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor, backgroundColor: Colors[colorScheme].buttonBackgroundColor }]}>
               <Text style={[styles.backPillText, { color: Colors[colorScheme].text }]} numberOfLines={1}>
                 {search}

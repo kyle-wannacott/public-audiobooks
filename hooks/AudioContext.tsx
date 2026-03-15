@@ -77,6 +77,8 @@ interface AudioContextType {
   // Display mode: grid (2-col) or list (1-col full-width rows)
   bookDisplayMode: 'grid' | 'list';
   setBookDisplayMode: (mode: 'grid' | 'list') => void;
+  // True once AsyncStorage preferences (displayMode, miniPlayer) have been read
+  prefsLoaded: boolean;
 }
 
 const AudioContext = createContext<AudioContextType | null>(null);
@@ -134,6 +136,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const [bookDisplayMode, setBookDisplayModeState] = useState<'grid' | 'list'>('grid');
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
 
   const setBookDisplayMode = useCallback((mode: 'grid' | 'list') => {
     setBookDisplayModeState(mode);
@@ -148,14 +151,17 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
       ).catch(console.log);
     }
+    // Wait for the two display-critical prefs before showing the shelf
+    Promise.all([
+      getAsyncData("miniPlayerEnabled"),
+      getAsyncData("bookDisplayMode"),
+    ]).then(([miniSaved, displaySaved]: any[]) => {
+      if (miniSaved !== null && miniSaved !== undefined) setMiniPlayerEnabledState(miniSaved);
+      if (displaySaved === 'grid' || displaySaved === 'list') setBookDisplayModeState(displaySaved);
+      setPrefsLoaded(true);
+    });
     getAsyncData("audioTrackSettingsTest").then((saved: any) => {
       if (saved) setAudioPlayerSettings(saved);
-    });
-    getAsyncData("miniPlayerEnabled").then((saved: any) => {
-      if (saved !== null && saved !== undefined) setMiniPlayerEnabledState(saved);
-    });
-    getAsyncData("bookDisplayMode").then((saved: any) => {
-      if (saved === 'grid' || saved === 'list') setBookDisplayModeState(saved);
     });
     getAsyncData("audioModeSettings").then((saved: any) => {
       if (saved) {
@@ -672,6 +678,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         setMiniPlayerEnabled,
         bookDisplayMode,
         setBookDisplayMode,
+        prefsLoaded,
       }}
     >
       {children}

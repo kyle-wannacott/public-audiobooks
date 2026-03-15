@@ -424,14 +424,14 @@ export default function AudiobookCover(props) {
               position: "absolute",
               bottom: 14,
               right: 0,
-              width: 30,
-              height: 40,
+              width: 40,
+              height: 48,
               margin: 0,
             }}
           >
             <MaterialCommunityIcons
               name={isCurrentlyPlaying ? "pause-circle" : "play-circle"}
-              size={26}
+              size={34}
               color={Colors[colorScheme].activityIndicatorColor}
             />
           </Button>

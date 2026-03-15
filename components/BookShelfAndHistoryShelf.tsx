@@ -36,7 +36,7 @@ const MINI_PLAYER_CONTENT_HEIGHT = 95;
 
 export default function BookShelfAndHistoryShelf(props: any) {
   const colorScheme = useColorScheme();
-  const { bookDisplayMode, showMiniPlayer, miniPlayerEnabled } = useAudio();
+  const { bookDisplayMode, showMiniPlayer, miniPlayerEnabled, prefsLoaded } = useAudio();
   const [audiobooksProgress, setAudiobooksProgress] = useState({});
   const [ratingsCache, setRatingsCache] = useState<Record<string, RatingCacheEntry>>({});
   const [avatarOnPressEnabled, setAvatarOnPressEnabled] = useState(true);
@@ -205,7 +205,7 @@ export default function BookShelfAndHistoryShelf(props: any) {
     return unsubscribe;
   }, [navigation]);
 
-  if (!props.loadingHistory) {
+  if (!props.loadingHistory && prefsLoaded) {
     const miniPlayerOffset = (showMiniPlayer && miniPlayerEnabled) ? MINI_PLAYER_CONTENT_HEIGHT : 0;
     return (
       <View>
