@@ -35,6 +35,7 @@ import {
 } from "../db/database_functions";
 import authorsListJson from "../assets/resources/audiobookAuthorsList.json";
 import { genreList } from "../assets/resources/audiobookGenreList";
+import { useTranslation } from "react-i18next";
 
 export default function Navigation({
   colorScheme,
@@ -99,6 +100,7 @@ const ExploreTopTab = createMaterialTopTabNavigator();
 
 function SearchTopTabs() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   return (
     <>
       <ExploreTopTab.Navigator
@@ -118,6 +120,7 @@ function SearchTopTabs() {
           }}
           name="Title"
           component={Explore}
+          options={{ tabBarLabel: t('title') }}
         />
         <ExploreTopTab.Screen
           initialParams={{
@@ -126,6 +129,7 @@ function SearchTopTabs() {
           }}
           name="New"
           component={Explore}
+          options={{ tabBarLabel: t('new') }}
         />
         <ExploreTopTab.Screen
           initialParams={{
@@ -135,6 +139,7 @@ function SearchTopTabs() {
           }}
           name="Genre"
           component={Explore}
+          options={{ tabBarLabel: t('genre') }}
         />
         <ExploreTopTab.Screen
           initialParams={{
@@ -144,6 +149,7 @@ function SearchTopTabs() {
           }}
           name="Author"
           component={Explore}
+          options={{ tabBarLabel: t('author') }}
         />
       </ExploreTopTab.Navigator>
     </>
@@ -154,6 +160,7 @@ const BookshelfTab = createMaterialTopTabNavigator();
 
 function BookshelfTabs() {
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const starredQuery = `select * from ${audiobookHistoryTableName} inner join ${audiobookProgressTableName} on ${audiobookProgressTableName}.audiobook_id = ${audiobookHistoryTableName}.audiobook_id where ${audiobookProgressTableName}.audiobook_shelved=1`;
 
   const inProgressQuery = `select * from ${audiobookHistoryTableName} inner join ${audiobookProgressTableName} on ${audiobookProgressTableName}.audiobook_id = ${audiobookHistoryTableName}.audiobook_id where ${audiobookProgressTableName}.listening_progress_percent > 0.001 and ${audiobookProgressTableName}.listening_progress_percent <= 0.99`;
@@ -166,20 +173,24 @@ function BookshelfTabs() {
         initialParams={{ sqlQuery: starredQuery }}
         name="Starred"
         component={Bookshelf}
+        options={{ tabBarLabel: t('starred') }}
       />
       <BookshelfTab.Screen
         initialParams={{ sqlQuery: inProgressQuery }}
         name="Progress"
         component={Bookshelf}
+        options={{ tabBarLabel: t('in_progress') }}
       />
       <BookshelfTab.Screen
         initialParams={{ sqlQuery: finishedQuery }}
         name="Finished"
         component={Bookshelf}
+        options={{ tabBarLabel: t('finished') }}
       />
       <BookshelfTab.Screen
         name="Downloads"
         component={Downloads}
+        options={{ tabBarLabel: t('downloads') }}
       />
     </BookshelfTab.Navigator>
   );
@@ -188,6 +199,7 @@ function BookshelfTabs() {
 function BottomTabNavigator() {
   const colorScheme = useColorScheme();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
 
   return (
     <BottomTab.Navigator
@@ -237,14 +249,14 @@ function BottomTabNavigator() {
         name="Explore"
         component={SearchTopTabs}
         options={{
-          tabBarLabel: "Explore",
+          tabBarLabel: t('explore'),
         }}
       />
       <BottomTab.Screen
         name="Bookshelf"
         component={BookshelfTabs}
         options={{
-          tabBarLabel: "Bookshelf",
+          tabBarLabel: t('bookshelf'),
           unmountOnBlur: false,
         }}
       />
@@ -252,7 +264,7 @@ function BottomTabNavigator() {
         name="History"
         component={History}
         options={{
-          tabBarLabel: "History",
+          tabBarLabel: t('history'),
           unmountOnBlur: false,
         }}
       />
@@ -260,7 +272,7 @@ function BottomTabNavigator() {
         name="Settings"
         component={Settings}
         options={{
-          tabBarLabel: "Settings",
+          tabBarLabel: t('settings'),
         }}
       />
     </BottomTab.Navigator>

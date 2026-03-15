@@ -21,6 +21,7 @@ import { getFullyDownloadedAudiobooks } from "../db/database_functions";
 import { deleteAudiobookFiles } from "../db/downloadService";
 import { useAudio } from "../hooks/AudioContext";
 import * as rssParser from "react-native-rss-parser";
+import { useTranslation } from "react-i18next";
 
 const db = openDatabase();
 const { width: windowWidth } = Dimensions.get("window");
@@ -29,6 +30,7 @@ export default function Downloads() {
   const colorScheme = useColorScheme();
   const navigation = useNavigation();
   const audio = useAudio();
+  const { t } = useTranslation();
   const [downloadedBooks, setDownloadedBooks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -44,12 +46,12 @@ export default function Downloads() {
 
   const handleDelete = (item: any) => {
     Alert.alert(
-      "Delete Download",
-      `Remove "${item.audiobook_title}" from downloads? This will free up storage space.`,
+      t('delete_download'),
+      `"${item.audiobook_title}" — ${t('confirm_delete_msg')}`,
       [
-        { text: "Cancel", style: "cancel" },
+        { text: t('cancel'), style: "cancel" },
         {
-          text: "Delete",
+          text: t('delete'),
           style: "destructive",
           onPress: async () => {
             await deleteAudiobookFiles(item.audiobook_id);
@@ -209,10 +211,10 @@ export default function Downloads() {
           color={Colors[colorScheme].tabIconDefault}
         />
         <Text style={[styles.emptyText, { color: Colors[colorScheme].text }]}>
-          No downloaded audiobooks
+          {t('no_downloaded_audiobooks')}
         </Text>
         <Text style={[styles.emptySubtext, { color: Colors[colorScheme].tabIconDefault }]}>
-          Download audiobooks from the player to listen offline
+          {t('download_offline_hint')}
         </Text>
       </View>
     );

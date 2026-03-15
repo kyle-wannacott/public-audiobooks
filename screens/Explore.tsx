@@ -17,10 +17,12 @@ import { LinearProgress } from "@rneui/themed";
 import { FlashList } from "@shopify/flash-list";
 import Fuse from "fuse.js";
 import { useAudio } from "../hooks/AudioContext";
+import { useTranslation } from "react-i18next";
 
 export default function Explore(props: any) {
   const colorScheme = useColorScheme();
   const currentColorScheme = Colors[colorScheme];
+  const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [userInputEntered, setUserInputEntered] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
@@ -141,13 +143,13 @@ export default function Explore(props: any) {
   function searchBarPlaceholder() {
     switch (searchBy) {
       case "recent":
-        return "New Releases";
+        return t('new_releases');
       case "title":
-        return "Search by Title:";
+        return t('search_by_title');
       case "author":
-        return `Search by Author:`;
+        return t('search_by_author');
       case "genre":
-        return `Search by Genre:`;
+        return t('search_by_genre');
     }
   }
 
@@ -379,7 +381,7 @@ export default function Explore(props: any) {
             >
               <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
               <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
-                Browse Genres
+                {t('browse_genres')}
               </Text>
             </TouchableOpacity>
             <View style={[styles.infoPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor, backgroundColor: Colors[colorScheme].buttonBackgroundColor }]}>
@@ -404,7 +406,7 @@ export default function Explore(props: any) {
             >
               <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
               <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
-                A–Z Authors
+                {t('az_authors')}
               </Text>
             </TouchableOpacity>
             {/* Letter pill — clickable, returns to that letter's author list */}
@@ -441,7 +443,7 @@ export default function Explore(props: any) {
             >
               <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
               <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
-                All Letters
+                {t('all_letters')}
               </Text>
             </TouchableOpacity>
             <View style={[styles.infoPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor, backgroundColor: Colors[colorScheme].buttonBackgroundColor }]}>
@@ -485,7 +487,7 @@ export default function Explore(props: any) {
           {/* Infinite books toggle */}
           <View style={[styles.checkboxRow, { justifyContent: 'space-between', marginBottom: 8 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
-              Infinite audiobooks per search
+              {t('infinite_audiobooks')}
             </Text>
             <Switch
               value={infiniteBooks}
@@ -498,7 +500,7 @@ export default function Explore(props: any) {
           {/* Per-search amount (disabled when infinite) */}
           <View style={[styles.checkboxRow, { opacity: infiniteBooks ? 0.4 : 1 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
-              Audiobooks per search: {infiniteBooks ? '∞' : audiobookAmountRequested}
+              {t('audiobooks_per_search')}: {infiniteBooks ? '∞' : audiobookAmountRequested}
             </Text>
           </View>
           <View
@@ -549,7 +551,7 @@ export default function Explore(props: any) {
           {/* Display mode toggle */}
           <View style={[styles.checkboxRow, { marginTop: 8 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text, marginRight: 8 }}>
-              Display:
+              {t('display')}:
             </Text>
             <TouchableOpacity
               onPress={() => setBookDisplayMode('grid')}
@@ -561,7 +563,7 @@ export default function Explore(props: any) {
               }}
             >
               <MaterialCommunityIcons name="view-grid" size={18} color={bookDisplayMode === 'grid' ? '#fff' : '#4CAF50'} />
-              <Text style={{ color: bookDisplayMode === 'grid' ? '#fff' : '#4CAF50', marginLeft: 4, fontSize: 14, fontWeight: '600' }}>Grid</Text>
+              <Text style={{ color: bookDisplayMode === 'grid' ? '#fff' : '#4CAF50', marginLeft: 4, fontSize: 14, fontWeight: '600' }}>{t('grid_view')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               onPress={() => setBookDisplayMode('list')}
@@ -573,14 +575,14 @@ export default function Explore(props: any) {
               }}
             >
               <MaterialCommunityIcons name="view-list" size={18} color={bookDisplayMode === 'list' ? '#fff' : '#4CAF50'} />
-              <Text style={{ color: bookDisplayMode === 'list' ? '#fff' : '#4CAF50', marginLeft: 4, fontSize: 14, fontWeight: '600' }}>List</Text>
+              <Text style={{ color: bookDisplayMode === 'list' ? '#fff' : '#4CAF50', marginLeft: 4, fontSize: 14, fontWeight: '600' }}>{t('list_view')}</Text>
             </TouchableOpacity>
           </View>
 
           {/* Volume */}
           <View style={[styles.checkboxRow, { marginTop: 10 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
-              Volume: {audio.audioPlayerSettings.volume.toFixed(2)}
+              {t('volume')}: {audio.audioPlayerSettings.volume.toFixed(2)}
             </Text>
           </View>
           <View style={styles.sliderControlRow}>
@@ -615,7 +617,7 @@ export default function Explore(props: any) {
           {/* Speed */}
           <View style={[styles.checkboxRow, { marginTop: 6 }]}>
             <Text style={{ fontSize: 15, color: currentColorScheme.text }}>
-              Speed: {audio.audioPlayerSettings.rate}x
+              {t('speed')}: {audio.audioPlayerSettings.rate}x
             </Text>
           </View>
           <View style={styles.sliderControlRow}>
@@ -652,7 +654,7 @@ export default function Explore(props: any) {
             onPress={toggleSearchOptionsOverlay}
             style={{ marginTop: 12 }}
           >
-            Close
+            {t('close')}
           </Button>
         </Overlay>
       </View>
