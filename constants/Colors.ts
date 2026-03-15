@@ -71,6 +71,7 @@ export default {
     audiobookProgressColor: "#50C878",
     audiobookProgressTrackColor: "#DCDCDC",
     ratingBackgroundColor: "black",
+    audiobookBackgroundColor: "#331800",
     audiobookImageContainerColor: "#331800",
     colorAroundAudiobookImage: "#51361a",
     shelfIndicatorContainerBGColor: "#331800",

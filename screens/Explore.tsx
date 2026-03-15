@@ -96,15 +96,18 @@ export default function Explore(props: any) {
           getAsyncData("userSearchAuthor").then((userSearchAuthorRetrieved) => {
             userSearchAuthorRetrieved
               ? setSearch(userSearchAuthorRetrieved)
-              : setSearch("Fyodor Dostoyevsky");
+              : setSearch("");
           });
           getAsyncData("userInputAuthorSubmitted").then(
             (userInputAuthorRetrieved) => {
               userInputAuthorRetrieved
                 ? setUserInputEntered(userInputAuthorRetrieved)
-                : setUserInputEntered("Dostoyevsky");
+                : setUserInputEntered("");
             }
           );
+          getAsyncData("userSelectedLetter").then((storedLetter) => {
+            storedLetter ? setSelectedLetter(storedLetter) : setSelectedLetter("");
+          });
           break;
       }
     });
@@ -389,7 +392,14 @@ export default function Explore(props: any) {
           <View style={styles.pillRow}>
             {/* ← All letters */}
             <TouchableOpacity
-              onPress={() => { setUserInputEntered(''); setSearch(''); setSelectedLetter(''); }}
+              onPress={() => {
+                setUserInputEntered('');
+                setSearch('');
+                setSelectedLetter('');
+                storeAsyncData('userSearchAuthor', '');
+                storeAsyncData('userInputAuthorSubmitted', '');
+                storeAsyncData('userSelectedLetter', '');
+              }}
               style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
             >
               <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
@@ -400,7 +410,12 @@ export default function Explore(props: any) {
             {/* Letter pill — clickable, returns to that letter's author list */}
             {selectedLetter ? (
               <TouchableOpacity
-                onPress={() => { setUserInputEntered(''); setSearch(''); }}
+                onPress={() => {
+                  setUserInputEntered('');
+                  setSearch('');
+                  storeAsyncData('userSearchAuthor', '');
+                  storeAsyncData('userInputAuthorSubmitted', '');
+                }}
                 style={[styles.backPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor }]}
               >
                 <Text style={[styles.backPillText, { color: Colors[colorScheme].text }]}>
@@ -418,7 +433,10 @@ export default function Explore(props: any) {
         ) : (searchBy === 'author' && !userInputEntered && selectedLetter) ? (
           <View style={styles.pillRow}>
             <TouchableOpacity
-              onPress={() => setSelectedLetter('')}
+              onPress={() => {
+                setSelectedLetter('');
+                storeAsyncData('userSelectedLetter', '');
+              }}
               style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
             >
               <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
@@ -716,7 +734,10 @@ export default function Explore(props: any) {
             contentContainerStyle={{ paddingBottom: 16 }}
             renderItem={({ item: letter }) => (
               <TouchableOpacity
-                onPress={() => setSelectedLetter(letter)}
+                onPress={() => {
+                  setSelectedLetter(letter);
+                  storeAsyncData('userSelectedLetter', letter);
+                }}
                 activeOpacity={0.75}
                 style={{
                   flex: 1,
@@ -762,7 +783,7 @@ export default function Explore(props: any) {
                   activeOpacity={0.75}
                   style={{ paddingVertical: 12, paddingHorizontal: 8 }}
                 >
-                  <Text style={{ color: Colors[colorScheme].text, fontSize: 15 }}>
+                  <Text style={{ color: '#F9F6EE', fontSize: 15 }}>
                     {displayName}
                   </Text>
                 </TouchableOpacity>

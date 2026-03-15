@@ -13,6 +13,7 @@ import {
   initialAudioBookProgressStoreDB,
   updateIfBookShelvedDB,
   isAudiobookFullyDownloaded,
+  storeAsyncData,
 } from "../db/database_functions";
 import { useAudio } from "../hooks/AudioContext";
 import * as rssParser from "react-native-rss-parser";
@@ -237,16 +238,28 @@ export default function AudiobookCover(props) {
           <View style={styles.listInfo}>
             <Text
               numberOfLines={2}
-              style={[styles.listTitle, { color: Colors[colorScheme].text }]}
+              style={[styles.listTitle, { color: '#F9F6EE' }]}
             >
               {item?.title}
             </Text>
-            <Text
-              numberOfLines={1}
-              style={[styles.listAuthor, { color: Colors[colorScheme].text }]}
+            <TouchableOpacity
+              onPress={() => {
+                const firstName = item?.authors?.[0]?.first_name?.trim() || '';
+                const lastName = item?.authors?.[0]?.last_name?.trim() || '';
+                const fullName = `${firstName} ${lastName}`.trim();
+                storeAsyncData('userSearchAuthor', fullName);
+                storeAsyncData('userInputAuthorSubmitted', lastName);
+                navigation.navigate('Author' as never);
+              }}
+              hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
             >
-              {item?.authors[0]?.first_name} {item?.authors[0]?.last_name}
-            </Text>
+              <Text
+                numberOfLines={1}
+                style={[styles.listAuthor, { color: '#F9F6EE', textDecorationLine: 'underline' }]}
+              >
+                {item?.authors[0]?.first_name} {item?.authors[0]?.last_name}
+              </Text>
+            </TouchableOpacity>
             <LinearProgress
               color={Colors[colorScheme].audiobookProgressColor}
               value={progressPercent}
@@ -256,7 +269,7 @@ export default function AudiobookCover(props) {
               style={{ marginTop: 4 }}
             />
             <View style={styles.listTimeRow}>
-              <Text style={[styles.listTimeText, { color: Colors[colorScheme].text }]}>
+              <Text style={[styles.listTimeText, { color: '#F9F6EE' }]}>
                 {formatTime(currentTimeSecs)}
               </Text>
               {rating > 0 ? (
@@ -274,9 +287,9 @@ export default function AudiobookCover(props) {
                   </View>
                 </TouchableOpacity>
               ) : (
-                <Text style={[styles.listTimeText, { color: Colors[colorScheme].text, opacity: 0.5 }]}>No rating</Text>
+                <Text style={[styles.listTimeText, { color: '#F9F6EE', opacity: 0.5 }]}>No rating</Text>
               )}
-              <Text style={[styles.listTimeText, { color: Colors[colorScheme].text }]}>
+              <Text style={[styles.listTimeText, { color: '#F9F6EE' }]}>
                 {item?.totaltime}
               </Text>
             </View>
