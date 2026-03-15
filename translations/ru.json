@@ -96,5 +96,15 @@
   "ok": "ОК",
   "stays_active_background": "Остаётся активным в фоне.",
   "speed_label": "Скорость",
-  "volume_label": "Громкость"
+  "volume_label": "Громкость",
+  "sort_order_visited": "Порядок посещений",
+  "sort_title": "Название",
+  "sort_rating": "Рейтинг",
+  "sort_listening_progress": "Прогресс прослушивания",
+  "sort_author_first_name": "Имя автора",
+  "sort_author_last_name": "Фамилия автора",
+  "sort_total_time": "Общее время",
+  "sort_language": "Язык",
+  "sort_genre": "Жанр",
+  "sort_copyright_year": "Год авторского права"
 }

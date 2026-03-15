@@ -96,5 +96,15 @@
   "ok": "OK",
   "stays_active_background": "Duy trì hoạt động trong nền.",
   "speed_label": "Tốc độ",
-  "volume_label": "Âm lượng"
+  "volume_label": "Âm lượng",
+  "sort_order_visited": "Thứ tự đã xem",
+  "sort_title": "Tiêu đề",
+  "sort_rating": "Đánh giá",
+  "sort_listening_progress": "Tiến độ nghe",
+  "sort_author_first_name": "Tên tác giả",
+  "sort_author_last_name": "Họ tác giả",
+  "sort_total_time": "Tổng thời gian",
+  "sort_language": "Ngôn ngữ",
+  "sort_genre": "Thể loại",
+  "sort_copyright_year": "Năm bản quyền"
 }

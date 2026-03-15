@@ -96,5 +96,15 @@
   "ok": "సరే",
   "stays_active_background": "బ్యాక్‌గ్రౌండ్‌లో యాక్టివ్‌గా ఉంటుంది.",
   "speed_label": "వేగం",
-  "volume_label": "వాల్యూమ్"
+  "volume_label": "వాల్యూమ్",
+  "sort_order_visited": "సందర్శన క్రమం",
+  "sort_title": "శీర్షిక",
+  "sort_rating": "రేటింగ్",
+  "sort_listening_progress": "వినే పురోగతి",
+  "sort_author_first_name": "రచయిత మొదటి పేరు",
+  "sort_author_last_name": "రచయిత చివరి పేరు",
+  "sort_total_time": "మొత్తం సమయం",
+  "sort_language": "భాష",
+  "sort_genre": "శైలి",
+  "sort_copyright_year": "కాపీరైట్ సంవత్సరం"
 }

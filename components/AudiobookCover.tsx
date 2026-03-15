@@ -727,7 +727,7 @@ const styles = StyleSheet.create({
     marginTop: 14,
     paddingVertical: 12,
     alignItems: 'center',
-    backgroundColor: 'rgba(128,128,128,0.2)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     borderRadius: 8,
   },
   modalCloseTxt: {

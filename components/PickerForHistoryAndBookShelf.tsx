@@ -6,9 +6,11 @@ import MaterialIconCommunity from "react-native-vector-icons/MaterialCommunityIc
 import { storeAsyncData } from "../db/database_functions";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
+import { useTranslation } from "react-i18next";
 
 function PickerForHistoryAndBookShelf(props: any) {
   const colorScheme = useColorScheme();
+  const { t } = useTranslation();
   const {
     pickerAndQueryState,
     getShelvedBooks,
@@ -58,54 +60,54 @@ function PickerForHistoryAndBookShelf(props: any) {
           }}
         >
           <Picker.Item
-            label="Order Visited"
+            label={t('sort_order_visited')}
             value="order by id"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Title"
+            label={t('sort_title')}
             value="order by audiobook_title"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Rating"
+            label={t('sort_rating')}
             value="order by audiobook_rating + 0"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Listening Progress"
+            label={t('sort_listening_progress')}
             value="order by listening_progress_percent"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Author First Name"
+            label={t('sort_author_first_name')}
             value="order by audiobook_author_first_name"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Author Last Name"
+            label={t('sort_author_last_name')}
             value="order by audiobook_author_last_name"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Total Time"
+            label={t('sort_total_time')}
             value="order by audiobook_total_time_secs"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Language"
+            label={t('sort_language')}
             value="order by audiobook_language"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Genre"
+            label={t('sort_genre')}
             value="order by audiobook_genres"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
           <Picker.Item
-            label="Copyright Year"
+            label={t('sort_copyright_year')}
             value="order by audiobook_copyright_year"
-            style={{ fontSize: 18 }}
+            style={{ fontSize: 18, color: Colors[colorScheme].pickerTextColor, backgroundColor: Colors[colorScheme].pickerBackgroundColor }}
           />
         </Picker>
       </View>

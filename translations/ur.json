@@ -96,5 +96,15 @@
   "ok": "ٹھیک ہے",
   "stays_active_background": "پس منظر میں فعال رہتا ہے۔",
   "speed_label": "رفتار",
-  "volume_label": "آواز"
+  "volume_label": "آواز",
+  "sort_order_visited": "زیارت کا ترتیب",
+  "sort_title": "عنوان",
+  "sort_rating": "درجہ بندی",
+  "sort_listening_progress": "سننے کی پیشرفت",
+  "sort_author_first_name": "مصنف کا نام",
+  "sort_author_last_name": "مصنف کا کنیت",
+  "sort_total_time": "کل وقت",
+  "sort_language": "زبان",
+  "sort_genre": "صنف",
+  "sort_copyright_year": "کاپی رائٹ سال"
 }

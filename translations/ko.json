@@ -96,5 +96,15 @@
   "ok": "확인",
   "stays_active_background": "백그라운드에서도 활성 유지.",
   "speed_label": "속도",
-  "volume_label": "볼륨"
+  "volume_label": "볼륨",
+  "sort_order_visited": "방문 순서",
+  "sort_title": "제목",
+  "sort_rating": "평점",
+  "sort_listening_progress": "듣기 진행률",
+  "sort_author_first_name": "저자 이름",
+  "sort_author_last_name": "저자 성",
+  "sort_total_time": "총 시간",
+  "sort_language": "언어",
+  "sort_genre": "장르",
+  "sort_copyright_year": "저작권 연도"
 }

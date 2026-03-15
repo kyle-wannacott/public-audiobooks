@@ -96,5 +96,15 @@
   "ok": "OK",
   "stays_active_background": "Tetap aktif di latar belakang.",
   "speed_label": "Kecepatan",
-  "volume_label": "Volume"
+  "volume_label": "Volume",
+  "sort_order_visited": "Urutan Dikunjungi",
+  "sort_title": "Judul",
+  "sort_rating": "Penilaian",
+  "sort_listening_progress": "Kemajuan Mendengarkan",
+  "sort_author_first_name": "Nama Depan Penulis",
+  "sort_author_last_name": "Nama Belakang Penulis",
+  "sort_total_time": "Total Waktu",
+  "sort_language": "Bahasa",
+  "sort_genre": "Genre",
+  "sort_copyright_year": "Tahun Hak Cipta"
 }

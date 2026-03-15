@@ -96,5 +96,15 @@
   "ok": "ตกลง",
   "stays_active_background": "ยังคงทำงานในพื้นหลัง",
   "speed_label": "ความเร็ว",
-  "volume_label": "ระดับเสียง"
+  "volume_label": "ระดับเสียง",
+  "sort_order_visited": "ลำดับการเยี่ยมชม",
+  "sort_title": "ชื่อเรื่อง",
+  "sort_rating": "คะแนน",
+  "sort_listening_progress": "ความคืบหน้าการฟัง",
+  "sort_author_first_name": "ชื่อผู้แต่ง",
+  "sort_author_last_name": "นามสกุลผู้แต่ง",
+  "sort_total_time": "เวลารวม",
+  "sort_language": "ภาษา",
+  "sort_genre": "ประเภท",
+  "sort_copyright_year": "ปีลิขสิทธิ์"
 }

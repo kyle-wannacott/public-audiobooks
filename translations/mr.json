@@ -96,5 +96,15 @@
   "ok": "ठीक आहे",
   "stays_active_background": "पार्श्वभूमीत सक्रिय राहते.",
   "speed_label": "वेग",
-  "volume_label": "आवाज"
+  "volume_label": "आवाज",
+  "sort_order_visited": "भेट दिलेला क्रम",
+  "sort_title": "शीर्षक",
+  "sort_rating": "रेटिंग",
+  "sort_listening_progress": "ऐकणे प्रगती",
+  "sort_author_first_name": "लेखकाचे नाव",
+  "sort_author_last_name": "लेखकाचे आडनाव",
+  "sort_total_time": "एकूण वेळ",
+  "sort_language": "भाषा",
+  "sort_genre": "शैली",
+  "sort_copyright_year": "कॉपीराइट वर्ष"
 }

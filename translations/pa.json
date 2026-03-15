@@ -96,5 +96,15 @@
   "ok": "ਠੀਕ ਹੈ",
   "stays_active_background": "ਬੈਕਗ੍ਰਾਊਂਡ ਵਿੱਚ ਸਰਗਰਮ ਰਹਿੰਦਾ ਹੈ।",
   "speed_label": "ਗਤੀ",
-  "volume_label": "ਵਾਲੀਅਮ"
+  "volume_label": "ਵਾਲੀਅਮ",
+  "sort_order_visited": "ਮੁਲਾਕਾਤ ਦਾ ਕ੍ਰਮ",
+  "sort_title": "ਸਿਰਲੇਖ",
+  "sort_rating": "ਦਰਜਾਬੰਦੀ",
+  "sort_listening_progress": "ਸੁਣਨ ਦੀ ਤਰੱਕੀ",
+  "sort_author_first_name": "ਲੇਖਕ ਦਾ ਨਾਮ",
+  "sort_author_last_name": "ਲੇਖਕ ਦਾ ਉਪਨਾਮ",
+  "sort_total_time": "ਕੁੱਲ ਸਮਾਂ",
+  "sort_language": "ਭਾਸ਼ਾ",
+  "sort_genre": "ਸ਼ੈਲੀ",
+  "sort_copyright_year": "ਕਾਪੀਰਾਈਟ ਸਾਲ"
 }

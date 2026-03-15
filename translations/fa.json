@@ -96,5 +96,15 @@
   "ok": "باشه",
   "stays_active_background": "در پس‌زمینه فعال می‌ماند.",
   "speed_label": "سرعت",
-  "volume_label": "صدا"
+  "volume_label": "صدا",
+  "sort_order_visited": "ترتیب بازدید",
+  "sort_title": "عنوان",
+  "sort_rating": "امتیاز",
+  "sort_listening_progress": "پیشرفت گوش دادن",
+  "sort_author_first_name": "نام نویسنده",
+  "sort_author_last_name": "نام خانوادگی نویسنده",
+  "sort_total_time": "زمان کل",
+  "sort_language": "زبان",
+  "sort_genre": "ژانر",
+  "sort_copyright_year": "سال حق چاپ"
 }

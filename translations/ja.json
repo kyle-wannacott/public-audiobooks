@@ -96,5 +96,15 @@
   "ok": "OK",
   "stays_active_background": "バックグラウンドでもアクティブを維持。",
   "speed_label": "速度",
-  "volume_label": "音量"
+  "volume_label": "音量",
+  "sort_order_visited": "訪問順",
+  "sort_title": "タイトル",
+  "sort_rating": "評価",
+  "sort_listening_progress": "再生進捗",
+  "sort_author_first_name": "著者名",
+  "sort_author_last_name": "著者姓",
+  "sort_total_time": "合計時間",
+  "sort_language": "言語",
+  "sort_genre": "ジャンル",
+  "sort_copyright_year": "著作権年"
 }

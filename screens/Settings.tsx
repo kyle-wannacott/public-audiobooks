@@ -85,7 +85,8 @@ const UserSettings = () => {
           ]}
         >
           {t('settings_title')}
-        </Text>      </View>
+        </Text>
+      </View>
       <View
         style={[
           styles.sectionHeadings,
@@ -295,7 +296,7 @@ const UserSettings = () => {
                 color={"green"}
               />
             }
-            titleInfo="3.0.0"
+            titleInfo="3.1.0"
             hasNavArrow={false}
             title={t('version') + ': '}
           />

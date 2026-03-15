@@ -96,5 +96,15 @@
   "ok": "OK",
   "stays_active_background": "Blijft actief op de achtergrond.",
   "speed_label": "Snelheid",
-  "volume_label": "Volume"
+  "volume_label": "Volume",
+  "sort_order_visited": "Volgorde bezocht",
+  "sort_title": "Titel",
+  "sort_rating": "Beoordeling",
+  "sort_listening_progress": "Luistervoortgang",
+  "sort_author_first_name": "Voornaam auteur",
+  "sort_author_last_name": "Achternaam auteur",
+  "sort_total_time": "Totale tijd",
+  "sort_language": "Taal",
+  "sort_genre": "Genre",
+  "sort_copyright_year": "Copyrighttjaar"
 }

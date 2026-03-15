@@ -96,5 +96,15 @@
   "ok": "确定",
   "stays_active_background": "在后台保持活跃。",
   "speed_label": "速度",
-  "volume_label": "音量"
+  "volume_label": "音量",
+  "sort_order_visited": "访问顺序",
+  "sort_title": "标题",
+  "sort_rating": "评分",
+  "sort_listening_progress": "收听进度",
+  "sort_author_first_name": "作者名",
+  "sort_author_last_name": "作者姓",
+  "sort_total_time": "总时长",
+  "sort_language": "语言",
+  "sort_genre": "类别",
+  "sort_copyright_year": "版权年份"
 }

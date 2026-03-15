@@ -96,5 +96,15 @@
   "ok": "Tamam",
   "stays_active_background": "Arka planda aktif kalır.",
   "speed_label": "Hız",
-  "volume_label": "Ses"
+  "volume_label": "Ses",
+  "sort_order_visited": "Ziyaret Sırası",
+  "sort_title": "Başlık",
+  "sort_rating": "Puan",
+  "sort_listening_progress": "Dinleme İlerlemesi",
+  "sort_author_first_name": "Yazar Adı",
+  "sort_author_last_name": "Yazar Soyadı",
+  "sort_total_time": "Toplam Süre",
+  "sort_language": "Dil",
+  "sort_genre": "Tür",
+  "sort_copyright_year": "Telif Yılı"
 }

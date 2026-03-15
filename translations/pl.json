@@ -96,5 +96,15 @@
   "ok": "OK",
   "stays_active_background": "Pozostaje aktywne w tle.",
   "speed_label": "Prędkość",
-  "volume_label": "Głośność"
+  "volume_label": "Głośność",
+  "sort_order_visited": "Kolejność odwiedzin",
+  "sort_title": "Tytuł",
+  "sort_rating": "Ocena",
+  "sort_listening_progress": "Postęp słuchania",
+  "sort_author_first_name": "Imię autora",
+  "sort_author_last_name": "Nazwisko autora",
+  "sort_total_time": "Całkowity czas",
+  "sort_language": "Język",
+  "sort_genre": "Gatunek",
+  "sort_copyright_year": "Rok praw autorskich"
 }

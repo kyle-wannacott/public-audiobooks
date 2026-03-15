@@ -96,5 +96,15 @@
   "ok": "حسناً",
   "stays_active_background": "يبقى نشطاً في الخلفية.",
   "speed_label": "السرعة",
-  "volume_label": "مستوى الصوت"
+  "volume_label": "مستوى الصوت",
+  "sort_order_visited": "ترتيب الزيارة",
+  "sort_title": "العنوان",
+  "sort_rating": "التقييم",
+  "sort_listening_progress": "تقدم الاستماع",
+  "sort_author_first_name": "الاسم الأول للمؤلف",
+  "sort_author_last_name": "الاسم الأخير للمؤلف",
+  "sort_total_time": "الوقت الإجمالي",
+  "sort_language": "اللغة",
+  "sort_genre": "النوع",
+  "sort_copyright_year": "سنة حقوق النشر"
 }

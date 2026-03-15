@@ -96,5 +96,15 @@
   "ok": "ঠিক আছে",
   "stays_active_background": "ব্যাকগ্রাউন্ডে সক্রিয় থাকে।",
   "speed_label": "গতি",
-  "volume_label": "ভলিউম"
+  "volume_label": "ভলিউম",
+  "sort_order_visited": "পরিদর্শনের ক্রম",
+  "sort_title": "শিরোনাম",
+  "sort_rating": "রেটিং",
+  "sort_listening_progress": "শ্রবণ অগ্রগতি",
+  "sort_author_first_name": "লেখকের প্রথম নাম",
+  "sort_author_last_name": "লেখকের শেষ নাম",
+  "sort_total_time": "মোট সময়",
+  "sort_language": "ভাষা",
+  "sort_genre": "শ্রেণী",
+  "sort_copyright_year": "কপিরাইট বছর"
 }

@@ -62,6 +62,7 @@ export default {
     bookshelfPickerBorderColor: "lightgrey",
     pickerBackgroundColor: antiFlashWhiteClose,
     pickerTextColor: "#000",
+    pickerDropdownColor: "#333",
     pickerMode: "dropdown",
     pickerRippleColor: "grey",
     sliderThumbColor: Cyan,

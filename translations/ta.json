@@ -96,5 +96,15 @@
   "ok": "சரி",
   "stays_active_background": "பின்னணியில் செயலில் இருக்கிறது.",
   "speed_label": "வேகம்",
-  "volume_label": "ஒலியளவு"
+  "volume_label": "ஒலியளவு",
+  "sort_order_visited": "பார்வையிட்ட வரிசை",
+  "sort_title": "தலைப்பு",
+  "sort_rating": "மதிப்பீடு",
+  "sort_listening_progress": "கேட்கும் முன்னேற்றம்",
+  "sort_author_first_name": "ஆசிரியர் முதல் பெயர்",
+  "sort_author_last_name": "ஆசிரியர் கடைசி பெயர்",
+  "sort_total_time": "மொத்த நேரம்",
+  "sort_language": "மொழி",
+  "sort_genre": "வகை",
+  "sort_copyright_year": "பதிப்புரிமை ஆண்டு"
 }

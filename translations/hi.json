@@ -96,5 +96,15 @@
   "ok": "ठीक है",
   "stays_active_background": "बैकग्राउंड में सक्रिय रहता है।",
   "speed_label": "गति",
-  "volume_label": "वॉल्यूम"
+  "volume_label": "वॉल्यूम",
+  "sort_order_visited": "देखे जाने का क्रम",
+  "sort_title": "शीर्षक",
+  "sort_rating": "रेटिंग",
+  "sort_listening_progress": "सुनने की प्रगति",
+  "sort_author_first_name": "लेखक का नाम",
+  "sort_author_last_name": "लेखक का उपनाम",
+  "sort_total_time": "कुल समय",
+  "sort_language": "भाषा",
+  "sort_genre": "शैली",
+  "sort_copyright_year": "कॉपीराइट वर्ष"
 }
