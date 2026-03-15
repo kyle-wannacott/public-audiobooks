@@ -2,7 +2,6 @@ import React from "react";
 import { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { ListItem, LinearProgress } from "@rneui/themed";
-import { Rating } from "react-native-ratings";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
@@ -144,18 +143,7 @@ export default function BookShelfAndHistoryShelf(props: any) {
         displayMode={bookDisplayMode}
         onAfterShelveToggle={() => props.getShelvedBooks(pickerAndQueryState)}
       />
-      {bookDisplayMode === 'grid' && audiobooksProgress[item.audiobook_id]?.audiobook_rating > 0 ? (
-        <Rating
-          showRating={false}
-          imageSize={20}
-          ratingCount={5}
-          startingValue={audiobooksProgress[item.audiobook_id]?.audiobook_rating}
-          readonly={true}
-          tintColor={Colors[colorScheme].ratingBackgroundColor}
-        />
-      ) : bookDisplayMode === 'grid' && audiobooksProgress[item.audiobook_id] ? (
-        <Text style={styles.noRatingText}>No rating</Text>
-      ) : undefined}
+      {/* Rating rendered inside AudiobookCoverHistoryAndBookshelf as a tappable widget */}
       {bookDisplayMode === 'grid' && (
         <AudiobookAccordionList
           accordionTitle={selectAccordionPickerTitle(

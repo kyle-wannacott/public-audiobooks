@@ -244,7 +244,10 @@ export default function ExploreShelf(props: any) {
       case "genre":
       case "author":
       case "title":
-        if (timesSearchBarSet.current < 1) {
+        // Skip only if this is the first run AND the value is empty (prevents
+        // fetching with a blank query on mount). If a value is already set on
+        // first mount (e.g. genre browser remounts with a genre), fetch immediately.
+        if (timesSearchBarSet.current < 1 && !searchBarInputSubmitted) {
           timesSearchBarSet.current += 1;
         } else {
           setLoadingAudioBooks(true);

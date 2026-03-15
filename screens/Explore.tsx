@@ -3,7 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { SearchBar, Overlay } from "@rneui/themed";
 import Slider from "@react-native-community/slider";
 import ExploreShelf from "../components/ExploreShelf";
-import { View, Dimensions, Text, Switch, ScrollView, FlatList } from "react-native";
+import { View, Dimensions, Text, Switch, ScrollView, FlatList, TouchableOpacity } from "react-native";
 import { StyleSheet } from "react-native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { getAsyncData, storeAsyncData } from "../db/database_functions";
@@ -23,6 +23,7 @@ export default function Explore(props: any) {
   const currentColorScheme = Colors[colorScheme];
   const [search, setSearch] = useState("");
   const [userInputEntered, setUserInputEntered] = useState("");
+  const [selectedGenre, setSelectedGenre] = useState("");
   const [visible, setVisible] = useState(false);
   let amountOfAudiobooks = 64;
   const [audiobookAmountRequested, setAudiobooksAmountRequested] =
@@ -566,35 +567,47 @@ export default function Explore(props: any) {
             keyExtractor={(item) => item}
             numColumns={2}
             contentContainerStyle={{ paddingBottom: 16 }}
-            renderItem={({ item: genre }) => (
-              <View
-                style={{
-                  flex: 1,
-                  margin: 4,
-                  borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: Colors[colorScheme].bookshelfPickerBorderColor,
-                  backgroundColor: Colors[colorScheme].buttonBackgroundColor,
-                  padding: 10,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Text
+            renderItem={({ item: genre }) => {
+              const isSelected = selectedGenre === genre;
+              return (
+                <TouchableOpacity
                   onPress={() => {
+                    setSelectedGenre(genre);
                     setSearch(genre);
                     setUserInputEntered(genre);
                   }}
+                  activeOpacity={0.75}
                   style={{
-                    color: Colors[colorScheme].text,
-                    fontSize: 13,
-                    textAlign: 'center',
+                    flex: 1,
+                    margin: 4,
+                    borderRadius: 8,
+                    borderWidth: isSelected ? 2 : 1,
+                    borderColor: isSelected
+                      ? Colors[colorScheme].activityIndicatorColor
+                      : Colors[colorScheme].bookshelfPickerBorderColor,
+                    backgroundColor: isSelected
+                      ? Colors[colorScheme].activityIndicatorColor + '33'
+                      : Colors[colorScheme].buttonBackgroundColor,
+                    padding: 10,
+                    alignItems: 'center',
+                    justifyContent: 'center',
                   }}
                 >
-                  {genre}
-                </Text>
-              </View>
-            )}
+                  <Text
+                    style={{
+                      color: isSelected
+                        ? Colors[colorScheme].activityIndicatorColor
+                        : Colors[colorScheme].text,
+                      fontSize: 13,
+                      textAlign: 'center',
+                      fontWeight: isSelected ? '700' : '400',
+                    }}
+                  >
+                    {genre}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
           />
         ) : (
           <ExploreShelf
