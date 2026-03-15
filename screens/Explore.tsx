@@ -169,10 +169,14 @@ export default function Explore(props: any) {
   }, []);
 
   const updateSearch = (search: string) => {
+    setSearch(search);
+    if (!search) {
+      setSuggestionsVisible(false);
+      return;
+    }
     if (searchBy !== "title" || searchBy === "author") {
       setSuggestionsVisible(true);
     }
-    setSearch(search);
 
     function generateFuse() {
       switch (searchBy) {
@@ -300,7 +304,7 @@ export default function Explore(props: any) {
               size: 25,
             }}
             placeholderTextColor={Colors[colorScheme].searchBarClearIcon}
-            onClear={() => setSuggestionsVisible(false)}
+            onClear={() => { setSuggestionsVisible(false); setUserInputEntered(''); setSearch(''); }}
             containerStyle={{
               backgroundColor: Colors[colorScheme].searchBarContainerStyle,
               borderTopWidth: 0,
@@ -556,14 +560,52 @@ export default function Explore(props: any) {
         </View>
       ) : undefined}
       <View style={styles.scrollStyle}>
-        <ExploreShelf
-          searchBy={searchBy}
-          setGettingAverageReview={setGettingAverageReview}
-          setLoadingAudiobookAmount={setLoadingAudiobookAmount}
-          searchBarInputSubmitted={userInputEntered}
-          searchBarCurrentText={search}
-          requestAudiobookAmount={infiniteBooks ? 0 : audiobookAmountRequested}
-        />
+        {searchBy === 'genre' && !userInputEntered ? (
+          <FlatList
+            data={props.route.params.genreList as string[]}
+            keyExtractor={(item) => item}
+            numColumns={2}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            renderItem={({ item: genre }) => (
+              <View
+                style={{
+                  flex: 1,
+                  margin: 4,
+                  borderRadius: 8,
+                  borderWidth: 1,
+                  borderColor: Colors[colorScheme].bookshelfPickerBorderColor,
+                  backgroundColor: Colors[colorScheme].buttonBackgroundColor,
+                  padding: 10,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text
+                  onPress={() => {
+                    setSearch(genre);
+                    setUserInputEntered(genre);
+                  }}
+                  style={{
+                    color: Colors[colorScheme].text,
+                    fontSize: 13,
+                    textAlign: 'center',
+                  }}
+                >
+                  {genre}
+                </Text>
+              </View>
+            )}
+          />
+        ) : (
+          <ExploreShelf
+            searchBy={searchBy}
+            setGettingAverageReview={setGettingAverageReview}
+            setLoadingAudiobookAmount={setLoadingAudiobookAmount}
+            searchBarInputSubmitted={userInputEntered}
+            searchBarCurrentText={search}
+            requestAudiobookAmount={infiniteBooks ? 0 : audiobookAmountRequested}
+          />
+        )}
       </View>
     </View>
   );
