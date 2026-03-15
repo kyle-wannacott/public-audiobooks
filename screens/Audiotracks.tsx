@@ -34,9 +34,11 @@ import {
 } from "../db/database_functions";
 
 import { getAsyncData, storeAsyncData } from "../db/database_functions";
+import { useTranslation } from "react-i18next";
 
 function Audiotracks(props: any) {
   const audio = useAudio();
+  const { t } = useTranslation();
 
   const [reviewInformation, setReviewInformation] = useState({
     reviewTitle: "",
@@ -700,7 +702,7 @@ function Audiotracks(props: any) {
               style={[styles.bookAuthor, { color: Colors[colorScheme].text }]}
             >
               {" "}
-              Author: {authorFirstName} {authorLastName}
+              {t('author_label')}: {authorFirstName} {authorLastName}
             </Text>
             <Text
               numberOfLines={isAudiobookDescriptionExpanded ? undefined : 6}
@@ -714,7 +716,7 @@ function Audiotracks(props: any) {
 
             <Button
               accessibilityLabel={`${
-                isAudiobookDescriptionExpanded ? "compress ↑" : "expand ↓"
+                isAudiobookDescriptionExpanded ? t('compress_description') : t('expand_description')
               } audiobook description`}
               mode="text"
               onPress={() => {
@@ -724,7 +726,7 @@ function Audiotracks(props: any) {
               }}
             >
               <Text style={{ color: "#268bd2" }}>
-                {isAudiobookDescriptionExpanded ? "compress ↑" : "expand ↓"}
+                {isAudiobookDescriptionExpanded ? t('compress_description') : t('expand_description')}
               </Text>
             </Button>
 
@@ -751,17 +753,17 @@ function Audiotracks(props: any) {
                   fontSize: 14,
                 }}
               >
-                No rating
+                {t('no_rating')}
               </Text>
             )}
             <View style={styles.shelveButtons}>
               <Button
                 accessibilityLabel={
                   isFullyDownloaded
-                    ? "Audiobook downloaded"
+                    ? t('audiobook_downloaded')
                     : isDownloading
-                    ? "Downloading audiobook..."
-                    : "Download audiobook for offline listening"
+                    ? t('downloading')
+                    : t('download_audiobook')
                 }
                 mode={Colors[colorScheme].buttonMode}
                 onPress={handleDownload}
@@ -787,7 +789,7 @@ function Audiotracks(props: any) {
                 />
               </Button>
               <Button
-                accessibilityLabel="Scroll to reviews"
+                accessibilityLabel={t('scroll_to_reviews')}
                 mode={Colors[colorScheme].buttonMode}
                 onPress={scrollToReviews}
                 style={{ backgroundColor: Colors[colorScheme].buttonBackgroundColor, marginLeft: 6 }}
@@ -795,7 +797,7 @@ function Audiotracks(props: any) {
                 <MaterialCommunityIcons name="comment-text-outline" size={24} color={Colors[colorScheme].buttonIconColor} />
               </Button>
               <Button
-                accessibilityLabel="Write a review"
+                accessibilityLabel={t('write_review_btn')}
                 mode={Colors[colorScheme].buttonMode}
                 onPress={() => toggleWriteReviewOverlay()}
                 style={{ backgroundColor: Colors[colorScheme].buttonBackgroundColor, marginLeft: 6 }}
@@ -805,7 +807,7 @@ function Audiotracks(props: any) {
               {isDownloading && (
                 <Text style={{ color: Colors[colorScheme].text, marginLeft: 8, alignSelf: "center" }}>
                   {downloadProgress.filter((p) => p.status === "complete").length}/
-                  {downloadProgress.length} tracks
+                  {downloadProgress.length} {t('tracks_progress')}
                 </Text>
               )}
             </View>
@@ -818,7 +820,7 @@ function Audiotracks(props: any) {
       return (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Button
-            accessibilityLabel="Opens overlay for writing a review on the audiobook."
+            accessibilityLabel={t('write_review_btn')}
             mode={Colors[colorScheme].buttonMode}
             onPress={() => toggleWriteReviewOverlay()}
             style={{
@@ -903,15 +905,13 @@ function Audiotracks(props: any) {
 
     const AudioTracksScreenData = [
       {
-        title: "No. Audiotracks: " + numSections,
+        title: `${t('num_audiotracks')}: ${numSections}`,
         renderItem: renderAudiotracks,
         data: chapters,
         keyExtractor: audiotracksKeyExtractor,
       },
       {
-        title:
-          "Average of reviews: " +
-          roundNumberTwoDecimal(audiotracksData?.audiobookRating),
+        title: `${t('average_reviews')}: ${roundNumberTwoDecimal(audiotracksData?.audiobookRating)}`,
         reviewIcon: makeReviewIcon(),
         renderItem: renderReviews,
         data: reviews,

@@ -7,12 +7,14 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { storeAsyncData, getAsyncData } from "../db/database_functions";
 import { useAudio } from "../hooks/AudioContext";
+import { useTranslation } from "react-i18next";
 
 const UserSettings = () => {
   const colorScheme = useColorScheme();
   const currentColorScheme = Colors[colorScheme];
   const insets = useSafeAreaInsets();
   const audio = useAudio();
+  const { t } = useTranslation();
   const [audioModeSettings, setAudioModeSettings] = useState({
     interruptionModeAndroid: 1,
     staysActiveInBackground: true,
@@ -82,9 +84,8 @@ const UserSettings = () => {
             { color: currentColorScheme.settingsTitleText, marginTop: insets.top + 10 },
           ]}
         >
-          Settings
-        </Text>
-      </View>
+          {t('settings_title')}
+        </Text>      </View>
       <View
         style={[
           styles.sectionHeadings,
@@ -93,7 +94,7 @@ const UserSettings = () => {
       >
         <SettingsList backgroundColor={currentColorScheme.settingsList}>
           <SettingsList.Header
-            headerText="Audiobook settings"
+            headerText={t('audiobook_settings')}
             headerStyle={[
               styles.audiobookSettingsSubHeading,
               { color: currentColorScheme.settingsSubSectionTitles },
@@ -109,16 +110,16 @@ const UserSettings = () => {
               />
             }
             hasNavArrow={false}
-            title="Show mini player"
+            title={t('show_mini_player')}
             itemWidth={50}
             switchState={audio.miniPlayerEnabled}
             switchOnValueChange={() => audio.setMiniPlayerEnabled(!audio.miniPlayerEnabled)}
             hasSwitch={true}
             onPress={() =>
               Alert.alert(
-                "Show mini player",
-                "Show a mini player at the bottom of the screen while audio is playing, so you can control playback without opening the full player. Default: On",
-                [{ text: "Close", style: "cancel" }]
+                t('show_mini_player'),
+                t('show_mini_player_desc'),
+                [{ text: t('close'), style: "cancel" }]
               )
             }
           />
@@ -145,18 +146,18 @@ const UserSettings = () => {
               />
             }
             hasNavArrow={false}
-            title="Stays active in background."
+            title={t('stays_active_background')}
             itemWidth={50}
             switchState={audioModeSettings.staysActiveInBackground}
             switchOnValueChange={staysActiveInBackgroundToggle}
             hasSwitch={true}
             onPress={() =>
               Alert.alert(
-                "Stays active in background.",
-                "Select if the audio session playback should stay active even when the app goes into the background. Default: On",
+                t('background_playback'),
+                t('background_playback_desc'),
                 [
                   {
-                    text: "Close",
+                    text: t('close'),
                     style: "cancel",
                   },
                 ]
@@ -173,18 +174,18 @@ const UserSettings = () => {
               />
             }
             hasNavArrow={false}
-            title="Duck Audio"
+            title={t('duck_audio')}
             itemWidth={50}
             switchState={audioModeSettings.shouldDuckAndroid}
             switchOnValueChange={shouldDuckAndroidToggle}
             hasSwitch={true}
             onPress={() =>
               Alert.alert(
-                "Duck Audio",
-                "Select if your audio should be lowered in volume (duck); when audio from another app interrupts your experience. When off, audio from other apps will pause your audio. Default: On",
+                t('duck_audio'),
+                t('duck_audio_desc'),
                 [
                   {
-                    text: "Close",
+                    text: t('close'),
                     style: "cancel",
                   },
                 ]
@@ -201,18 +202,18 @@ const UserSettings = () => {
               />
             }
             hasNavArrow={false}
-            title="Play through earpiece"
+            title={t('play_through_earpiece')}
             itemWidth={50}
             switchState={audioModeSettings.playThroughEarpieceAndroid}
             switchOnValueChange={playThroughEarpieceAndroidToggle}
             hasSwitch={true}
             onPress={() =>
               Alert.alert(
-                "Play through earpiece",
-                "Selecting if the audio is routed to earpiece. Default: Off",
+                t('play_through_earpiece'),
+                t('play_through_earpiece_desc'),
                 [
                   {
-                    text: "Close",
+                    text: t('close'),
                     style: "cancel",
                   },
                 ]
@@ -279,7 +280,7 @@ const UserSettings = () => {
             }
           />*/}
           <SettingsList.Header
-            headerText="About"
+            headerText={t('about')}
             headerStyle={[
               styles.audiobookSettingsSubHeading,
               { color: currentColorScheme.settingsSubSectionTitles },
@@ -296,7 +297,7 @@ const UserSettings = () => {
             }
             titleInfo="3.0.0"
             hasNavArrow={false}
-            title="Version: "
+            title={t('version') + ': '}
           />
           <SettingsList.Item
             hasNavArrow={true}
@@ -312,10 +313,10 @@ const UserSettings = () => {
             onPress={() =>
               Alert.alert(
                 "GitHub",
-                "Checkout the GitHub to open issues, contribute, or request features.",
+                t('github_desc'),
                 [
                   {
-                    text: "Cancel",
+                    text: t('close'),
                     onPress: () => console.log("Cancel Pressed"),
                     style: "cancel",
                   },
@@ -343,10 +344,10 @@ const UserSettings = () => {
             onPress={() =>
               Alert.alert(
                 "GitHub",
-                "The audiobooks contained in this application are public domain and read by volunteers from LibriVox",
+                t('librivox_desc'),
                 [
                   {
-                    text: "Cancel",
+                    text: t('close'),
                     onPress: () => console.log("Cancel Pressed"),
                     style: "cancel",
                   },
