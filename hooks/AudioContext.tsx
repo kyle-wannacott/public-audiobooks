@@ -183,9 +183,7 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
       if (statusSubscription.current) {
         statusSubscription.current.remove();
       }
-      if (typeof sound.current.clearLockScreenControls === 'function') {
-        sound.current.clearLockScreenControls();
-      }
+      sound.current.clearLockScreenControls();
       sound.current.release();
     };
   }, []);
@@ -308,17 +306,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
               duration: sound.current.duration * 1000,
             });
 
-            if (typeof sound.current.updateLockScreenMetadata === 'function') {
-              sound.current.updateLockScreenMetadata({
-                title:
-                  book.chapters[nextIdx]?.section_number +
-                  ". " +
-                  book.chapters[nextIdx]?.title,
-                artist: `${book.authorFirstName} ${book.authorLastName}`,
-                albumTitle: book.title,
-                artworkUrl: book.coverImage,
-              });
-            }
+            sound.current.updateLockScreenMetadata({
+              title:
+                book.chapters[nextIdx]?.section_number +
+                ". " +
+                book.chapters[nextIdx]?.title,
+              artist: `${book.authorFirstName} ${book.authorLastName}`,
+              albumTitle: book.title,
+              artworkUrl: book.coverImage,
+            });
 
             sound.current.play();
             setIsPlaying(true);
@@ -490,17 +486,15 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
         });
 
         // Lock screen / notification metadata
-        if (typeof sound.current.setActiveForLockScreen === 'function') {
-          sound.current.setActiveForLockScreen(true, {
-            title: chapterTitle,
-            artist: `${book.authorFirstName} ${book.authorLastName}`,
-            albumTitle: book.title,
-            artworkUrl: book.coverImage,
-          }, {
-            showSeekForward: true,
-            showSeekBackward: true,
-          });
-        }
+        sound.current.setActiveForLockScreen(true, {
+          title: chapterTitle,
+          artist: `${book.authorFirstName} ${book.authorLastName}`,
+          albumTitle: book.title,
+          artworkUrl: book.coverImage,
+        }, {
+          showSeekForward: true,
+          showSeekBackward: true,
+        });
 
         setIsLoading(false);
         setIsLoadedOnce(true);

@@ -16,6 +16,7 @@ function AudiotrackSliderWithCurrentPlaying(props: any) {
         minimumValue={0.0}
         maximumValue={100.0}
         minimumTrackTintColor={currentColorScheme.sliderTrackColor}
+        maximumTrackTintColor={currentColorScheme.sliderMaxTrackColor}
         thumbTintColor={currentColorScheme.sliderThumbColor}
         onSlidingComplete={(data) => props.SeekUpdate(data)}
       />

@@ -127,6 +127,7 @@ export default function MiniPlayer() {
           minimumValue={0}
           maximumValue={100}
           minimumTrackTintColor={colors.sliderTrackColor}
+          maximumTrackTintColor={colors.sliderMaxTrackColor}
           thumbTintColor={colors.sliderThumbColor}
           onSlidingComplete={(val) => audio.seekToPosition(val)}
           style={styles.slider}
