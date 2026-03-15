@@ -80,11 +80,16 @@ export default function Explore(props: any) {
           break;
         case "genre":
           getAsyncData("userSearchGenre").then((userSearchGenreRetrieved) => {
-            userSearchGenreRetrieved
-              ? (setSearch(userSearchGenreRetrieved),
-                setUserInputEntered(userSearchGenreRetrieved))
-              : (setSearch("*Non-fiction"),
-                setUserInputEntered("*Non-fiction"));
+            if (userSearchGenreRetrieved) {
+              setSearch(userSearchGenreRetrieved);
+              setUserInputEntered(userSearchGenreRetrieved);
+              setSelectedGenre(userSearchGenreRetrieved); // re-highlight the tile
+            } else {
+              // No stored genre — show the genre browser grid with empty search
+              setSearch("");
+              setUserInputEntered("");
+              setSelectedGenre("");
+            }
           });
           break;
         case "author":
@@ -301,6 +306,8 @@ export default function Explore(props: any) {
               if (searchBy === "title") {
                 storeSearchText("userSearchTitle", search);
                 storeSearchBarSubmitted("userInputTitleSubmitted", search);
+              } else if (searchBy === "genre" && search) {
+                storeSearchText("userSearchGenre", search);
               }
             }}
             value={search}
@@ -323,7 +330,13 @@ export default function Explore(props: any) {
               size: 25,
             }}
             placeholderTextColor={Colors[colorScheme].searchBarClearIcon}
-            onClear={() => { setSuggestionsVisible(false); setUserInputEntered(''); setSearch(''); setSelectedLetter(''); }}
+            onClear={() => {
+              setSuggestionsVisible(false);
+              setUserInputEntered('');
+              setSearch('');
+              setSelectedLetter('');
+              if (searchBy === 'genre') storeSearchText("userSearchGenre", '');
+            }}
             containerStyle={{
               backgroundColor: Colors[colorScheme].searchBarContainerStyle,
               borderTopWidth: 0,
@@ -661,6 +674,7 @@ export default function Explore(props: any) {
                     setSelectedGenre(genre);
                     setSearch(genre);
                     setUserInputEntered(genre);
+                    storeSearchText("userSearchGenre", genre);
                   }}
                   activeOpacity={0.75}
                   style={{
