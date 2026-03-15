@@ -317,8 +317,38 @@ export default function AudiobookCover(props) {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor, paddingBottom: insets.bottom + 12 }]}>
             <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>{item?.audiobook_title}</Text>
-            <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text }]}>{item?.audiobook_author_first_name} {item?.audiobook_author_last_name}</Text>
+            <TouchableOpacity onPress={() => {
+              const firstName = item?.audiobook_author_first_name?.trim() || '';
+              const lastName = item?.audiobook_author_last_name?.trim() || '';
+              const fullName = `${firstName} ${lastName}`.trim();
+              storeAsyncData('userSearchAuthor', fullName);
+              storeAsyncData('userInputAuthorSubmitted', lastName);
+              setInfoVisible(false);
+              (navigation as any).navigate('Explore', { screen: 'Author' });
+            }}>
+              <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text, textDecorationLine: 'underline' }]}>
+                {item?.audiobook_author_first_name} {item?.audiobook_author_last_name}
+              </Text>
+            </TouchableOpacity>
             <Text style={[{ color: Colors[colorScheme].text, opacity: 0.7, fontSize: 12, marginBottom: 6 }]}>{item?.audiobook_total_time} · {item?.audiobook_language}</Text>
+            {item?.audiobook_genres && (() => {
+              try {
+                const genres = JSON.parse(item.audiobook_genres);
+                if (genres?.length > 0) return (
+                  <TouchableOpacity onPress={() => {
+                    const genreName = genres[0]?.name || '';
+                    storeAsyncData('userSearchGenre', genreName);
+                    setInfoVisible(false);
+                    (navigation as any).navigate('Explore', { screen: 'Genre' });
+                  }}>
+                    <Text style={{ color: Colors[colorScheme].text, fontSize: 12, marginBottom: 6, textDecorationLine: 'underline' }}>
+                      {genres.map((g: any) => g.name).join(', ')}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              } catch { /* ignore parse errors */ }
+              return null;
+            })()}
             {loadingDescription ? <ActivityIndicator /> : (
               <ScrollView style={{ maxHeight: 300 }}>
                 <Text style={{ color: Colors[colorScheme].text, lineHeight: 20 }}>{description || 'No description available.'}</Text>
@@ -510,8 +540,38 @@ export default function AudiobookCover(props) {
       <View style={styles.modalOverlay}>
         <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor, paddingBottom: insets.bottom + 12 }]}>
           <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>{item?.audiobook_title}</Text>
-          <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text }]}>{item?.audiobook_author_first_name} {item?.audiobook_author_last_name}</Text>
+          <TouchableOpacity onPress={() => {
+            const firstName = item?.audiobook_author_first_name?.trim() || '';
+            const lastName = item?.audiobook_author_last_name?.trim() || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            storeAsyncData('userSearchAuthor', fullName);
+            storeAsyncData('userInputAuthorSubmitted', lastName);
+            setInfoVisible(false);
+            (navigation as any).navigate('Explore', { screen: 'Author' });
+          }}>
+            <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text, textDecorationLine: 'underline' }]}>
+              {item?.audiobook_author_first_name} {item?.audiobook_author_last_name}
+            </Text>
+          </TouchableOpacity>
           <Text style={[{ color: Colors[colorScheme].text, opacity: 0.7, fontSize: 12, marginBottom: 6 }]}>{item?.audiobook_total_time} · {item?.audiobook_language}</Text>
+          {item?.audiobook_genres && (() => {
+            try {
+              const genres = JSON.parse(item.audiobook_genres);
+              if (genres?.length > 0) return (
+                <TouchableOpacity onPress={() => {
+                  const genreName = genres[0]?.name || '';
+                  storeAsyncData('userSearchGenre', genreName);
+                  setInfoVisible(false);
+                  (navigation as any).navigate('Explore', { screen: 'Genre' });
+                }}>
+                  <Text style={{ color: Colors[colorScheme].text, fontSize: 12, marginBottom: 6, textDecorationLine: 'underline' }}>
+                    {genres.map((g: any) => g.name).join(', ')}
+                  </Text>
+                </TouchableOpacity>
+              );
+            } catch { /* ignore parse errors */ }
+            return null;
+          })()}
           {loadingDescription ? <ActivityIndicator /> : (
             <ScrollView style={{ maxHeight: 300 }}>
               <Text style={{ color: Colors[colorScheme].text, lineHeight: 20 }}>{description || 'No description available.'}</Text>

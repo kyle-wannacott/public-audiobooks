@@ -1,14 +1,30 @@
 import React from "react";
-import { StyleSheet, Dimensions, Text } from "react-native";
+import { StyleSheet, Dimensions, Text, TouchableOpacity } from "react-native";
 import { List, Divider } from "react-native-paper";
 import { ListItem } from "@rneui/themed";
 import MaterialIconCommunity from "react-native-vector-icons/MaterialCommunityIcons.js";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
+import { useNavigation } from "@react-navigation/native";
+import { storeAsyncData } from "../db/database_functions";
 
 function AudiobookAccordionList(props: any) {
   const colorScheme = useColorScheme();
   const currentColorScheme = Colors[colorScheme];
+  const navigation = useNavigation<any>();
+
+  const handleAuthorPress = () => {
+    const fullName = `${props.audiobookAuthorFirstName || ''} ${props.audiobookAuthorLastName || ''}`.trim();
+    const lastName = (props.audiobookAuthorLastName || '').trim();
+    storeAsyncData('userSearchAuthor', fullName);
+    storeAsyncData('userInputAuthorSubmitted', lastName);
+    navigation.navigate('Author');
+  };
+
+  const handleGenrePress = (genreName: string) => {
+    storeAsyncData('userSearchGenre', genreName);
+    navigation.navigate('Genre');
+  };
   return (
     <List.Accordion
       titleStyle={[
@@ -50,20 +66,24 @@ function AudiobookAccordionList(props: any) {
         </ListItem.Subtitle>
         <Divider />
 
-        <ListItem.Subtitle
-          style={[
-            styles.accordianItemsStyle,
-            { color: currentColorScheme.accordionItemsTextColor },
-            { backgroundColor: currentColorScheme.accordionItemsBGColor },
-          ]}
-        >
-          <MaterialIconCommunity
-            name="feather"
-            size={20}
-          ></MaterialIconCommunity>
-          {": "}
-          {props.audiobookAuthorFirstName} {props.audiobookAuthorLastName}
-        </ListItem.Subtitle>
+        <TouchableOpacity onPress={handleAuthorPress} activeOpacity={0.7}>
+          <ListItem.Subtitle
+            style={[
+              styles.accordianItemsStyle,
+              { color: currentColorScheme.accordionItemsTextColor },
+              { backgroundColor: currentColorScheme.accordionItemsBGColor },
+            ]}
+          >
+            <MaterialIconCommunity
+              name="feather"
+              size={20}
+            ></MaterialIconCommunity>
+            {": "}
+            <Text style={{ textDecorationLine: 'underline' }}>
+              {props.audiobookAuthorFirstName} {props.audiobookAuthorLastName}
+            </Text>
+          </ListItem.Subtitle>
+        </TouchableOpacity>
         <Divider />
 
         <ListItem.Subtitle
@@ -96,22 +116,32 @@ function AudiobookAccordionList(props: any) {
           {props.audiobookLanguage}
         </ListItem.Subtitle>
         <Divider />
-        <ListItem.Subtitle
-          style={[
-            styles.accordianItemsStyle,
-            { color: currentColorScheme.accordionItemsTextColor },
-            { backgroundColor: currentColorScheme.accordionItemsBGColor },
-          ]}
+        <TouchableOpacity
+          onPress={() => {
+            const genres = JSON.parse(props?.audiobookGenres);
+            if (genres?.length > 0) handleGenrePress(genres[0]?.name || '');
+          }}
+          activeOpacity={0.7}
         >
-          <MaterialIconCommunity
-            name="guy-fawkes-mask"
-            size={20}
-          ></MaterialIconCommunity>
-          {": "}
-          {JSON.parse(props?.audiobookGenres).map((genre) => {
-            return `${genre?.name} `;
-          })}
-        </ListItem.Subtitle>
+          <ListItem.Subtitle
+            style={[
+              styles.accordianItemsStyle,
+              { color: currentColorScheme.accordionItemsTextColor },
+              { backgroundColor: currentColorScheme.accordionItemsBGColor },
+            ]}
+          >
+            <MaterialIconCommunity
+              name="guy-fawkes-mask"
+              size={20}
+            ></MaterialIconCommunity>
+            {": "}
+            <Text style={{ textDecorationLine: 'underline' }}>
+              {JSON.parse(props?.audiobookGenres).map((genre) => {
+                return `${genre?.name} `;
+              })}
+            </Text>
+          </ListItem.Subtitle>
+        </TouchableOpacity>
         <Divider />
         <ListItem.Subtitle
           style={[

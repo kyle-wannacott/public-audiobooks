@@ -349,8 +349,32 @@ export default function AudiobookCover(props) {
         <View style={styles.modalOverlay}>
           <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor, paddingBottom: insets.bottom + 12 }]}>
             <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>{item?.title}</Text>
-            <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text }]}>{item?.authors?.[0]?.first_name} {item?.authors?.[0]?.last_name}</Text>
+            <TouchableOpacity onPress={() => {
+              const firstName = item?.authors?.[0]?.first_name?.trim() || '';
+              const lastName = item?.authors?.[0]?.last_name?.trim() || '';
+              const fullName = `${firstName} ${lastName}`.trim();
+              storeAsyncData('userSearchAuthor', fullName);
+              storeAsyncData('userInputAuthorSubmitted', lastName);
+              setInfoVisible(false);
+              navigation.navigate('Author' as never);
+            }}>
+              <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text, textDecorationLine: 'underline' }]}>
+                {item?.authors?.[0]?.first_name} {item?.authors?.[0]?.last_name}
+              </Text>
+            </TouchableOpacity>
             <Text style={[{ color: Colors[colorScheme].text, opacity: 0.7, fontSize: 12, marginBottom: 6 }]}>{item?.totaltime} · {item?.language}</Text>
+            {item?.genres && item.genres.length > 0 && (
+              <TouchableOpacity onPress={() => {
+                const genreName = item.genres[0]?.name || '';
+                storeAsyncData('userSearchGenre', genreName);
+                setInfoVisible(false);
+                navigation.navigate('Genre' as never);
+              }}>
+                <Text style={{ color: Colors[colorScheme].text, fontSize: 12, marginBottom: 6, textDecorationLine: 'underline' }}>
+                  {item.genres.map((g: any) => g.name).join(', ')}
+                </Text>
+              </TouchableOpacity>
+            )}
             {loadingDescription ? <ActivityIndicator /> : (
               <ScrollView style={{ maxHeight: 300 }}>
                 <Text style={{ color: Colors[colorScheme].text, lineHeight: 20 }}>{description || 'No description available.'}</Text>
@@ -547,8 +571,32 @@ export default function AudiobookCover(props) {
       <View style={styles.modalOverlay}>
         <View style={[styles.modalContainer, { backgroundColor: Colors[colorScheme].overlayBackgroundColor, paddingBottom: insets.bottom + 12 }]}>
           <Text style={[styles.modalTitle, { color: Colors[colorScheme].text }]}>{item?.title}</Text>
-          <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text }]}>{item?.authors?.[0]?.first_name} {item?.authors?.[0]?.last_name}</Text>
+          <TouchableOpacity onPress={() => {
+            const firstName = item?.authors?.[0]?.first_name?.trim() || '';
+            const lastName = item?.authors?.[0]?.last_name?.trim() || '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            storeAsyncData('userSearchAuthor', fullName);
+            storeAsyncData('userInputAuthorSubmitted', lastName);
+            setInfoVisible(false);
+            navigation.navigate('Author' as never);
+          }}>
+            <Text style={[styles.modalSubtitle, { color: Colors[colorScheme].text, textDecorationLine: 'underline' }]}>
+              {item?.authors?.[0]?.first_name} {item?.authors?.[0]?.last_name}
+            </Text>
+          </TouchableOpacity>
           <Text style={[{ color: Colors[colorScheme].text, opacity: 0.7, fontSize: 12, marginBottom: 6 }]}>{item?.totaltime} · {item?.language}</Text>
+          {item?.genres && item.genres.length > 0 && (
+            <TouchableOpacity onPress={() => {
+              const genreName = item.genres[0]?.name || '';
+              storeAsyncData('userSearchGenre', genreName);
+              setInfoVisible(false);
+              navigation.navigate('Genre' as never);
+            }}>
+              <Text style={{ color: Colors[colorScheme].text, fontSize: 12, marginBottom: 6, textDecorationLine: 'underline' }}>
+                {item.genres.map((g: any) => g.name).join(', ')}
+              </Text>
+            </TouchableOpacity>
+          )}
           {loadingDescription ? <ActivityIndicator /> : (
             <ScrollView style={{ maxHeight: 300 }}>
               <Text style={{ color: Colors[colorScheme].text, lineHeight: 20 }}>{description || 'No description available.'}</Text>
