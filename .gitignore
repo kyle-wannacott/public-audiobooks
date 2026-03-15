@@ -81,3 +81,4 @@ dist/
 .metro-health-check*
 
 # @end expo-cli
+*.aab
