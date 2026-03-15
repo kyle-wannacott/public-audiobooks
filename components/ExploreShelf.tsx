@@ -29,6 +29,8 @@ import {
   loadRatingsCacheForIds,
   loadProgressForIds,
   createDownloadsTable,
+  storeAsyncData,
+  getAsyncData,
 } from "../db/database_functions";
 import useColorScheme from "../hooks/useColorScheme";
 import Colors from "../constants/Colors";
@@ -96,6 +98,8 @@ export default function ExploreShelf(props: any) {
   const [reviewURLS, setReviewsUrlList] = useState<any[]>([]);
   const [audiobooksProgress, setAudiobooksProgress] = useState({});
   const [ratingsFetched, setRatingsFetched] = useState<Set<any>>(new Set());
+  const flatListRef = useRef<any>(null);
+  const pendingScrollOffset = useRef<number | null>(null);
   const {
     apiSettings,
     requestAudiobookAmount,
@@ -295,7 +299,16 @@ export default function ExploreShelf(props: any) {
     }
   }, [data.books]);
 
-  // Auto-fetch ratings AND progress: first check DB cache (fast bulk query), only hit network for uncached books.
+  // Scroll position persistence — save and restore per search context
+  const scrollKey = `scrollPos_${searchBy}_${searchBarInputSubmitted || ''}`;
+  useEffect(() => {
+    if (!data?.books || loadingAudioBooks) return;
+    getAsyncData(scrollKey).then((saved) => {
+      if (saved && parseFloat(saved) > 0) {
+        pendingScrollOffset.current = parseFloat(saved);
+      }
+    });
+  }, [data?.books, loadingAudioBooks, scrollKey]);  // Auto-fetch ratings AND progress: first check DB cache (fast bulk query), only hit network for uncached books.
   // Wrapped in InteractionManager to avoid interfering with tab animations.
   useEffect(() => {
     if (reviewURLS.length === 0 || !data?.books) return;
@@ -470,6 +483,7 @@ export default function ExploreShelf(props: any) {
     return (
       <View style={styles.audiobookContainer}>
         <FlatList
+          ref={flatListRef}
           key={bookDisplayMode}
           data={data.books}
           keyExtractor={keyExtractor}
@@ -480,6 +494,18 @@ export default function ExploreShelf(props: any) {
           maxToRenderPerBatch={6}
           initialNumToRender={6}
           windowSize={10}
+          onMomentumScrollEnd={(e) => {
+            storeAsyncData(scrollKey, e.nativeEvent.contentOffset.y.toString());
+          }}
+          onLayout={() => {
+            if (pendingScrollOffset.current !== null && flatListRef.current) {
+              const offset = pendingScrollOffset.current;
+              pendingScrollOffset.current = null;
+              setTimeout(() => {
+                flatListRef.current?.scrollToOffset({ offset, animated: false });
+              }, 80);
+            }
+          }}
         />
       </View>
     );

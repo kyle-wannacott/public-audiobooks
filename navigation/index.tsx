@@ -13,6 +13,7 @@ import {
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as React from "react";
 import { ColorSchemeName } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import Colors from "../constants/Colors";
 import useColorScheme from "../hooks/useColorScheme";
 import { RootStackParamList, RootTabParamList } from "../types";
@@ -37,18 +38,47 @@ import authorsListJson from "../assets/resources/audiobookAuthorsList.json";
 import { genreList } from "../assets/resources/audiobookGenreList";
 import { useTranslation } from "react-i18next";
 
+const NAV_STATE_KEY = 'NAVIGATION_STATE_V1';
+
 export default function Navigation({
   colorScheme,
 }: {
   colorScheme: ColorSchemeName;
 }) {
+  const [isReady, setIsReady] = React.useState(false);
+  const [initialState, setInitialState] = React.useState<any>();
+
+  React.useEffect(() => {
+    const restoreState = async () => {
+      try {
+        const savedString = await AsyncStorage.getItem(NAV_STATE_KEY);
+        if (savedString) {
+          const state = JSON.parse(savedString);
+          setInitialState(state);
+        }
+      } catch (_e) {
+        // ignore — corrupt state, just start fresh
+      } finally {
+        setIsReady(true);
+      }
+    };
+    restoreState();
+  }, []);
+
   if (!isEdgeToEdge()) {
     NavigationBar.setBackgroundColorAsync(
       Colors[colorScheme ?? "dark"].statusBarBackground
     ).catch(() => {});
   }
+
+  if (!isReady) return null;
+
   return (
     <NavigationContainer
+      initialState={initialState}
+      onStateChange={(state) => {
+        AsyncStorage.setItem(NAV_STATE_KEY, JSON.stringify(state)).catch(() => {});
+      }}
       linking={LinkingConfiguration}
       theme={colorScheme === "dark" ? DarkTheme : DefaultTheme}
     >
