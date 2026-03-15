@@ -24,6 +24,7 @@ export default function Explore(props: any) {
   const [search, setSearch] = useState("");
   const [userInputEntered, setUserInputEntered] = useState("");
   const [selectedGenre, setSelectedGenre] = useState("");
+  const [selectedLetter, setSelectedLetter] = useState("");
   const [visible, setVisible] = useState(false);
   let amountOfAudiobooks = 64;
   const [audiobookAmountRequested, setAudiobooksAmountRequested] =
@@ -251,6 +252,23 @@ export default function Explore(props: any) {
     );
   };
 
+  // Derived data for the author A-Z browser
+  const allAuthors: any[] = searchBy === 'author'
+    ? (props.route.params.authorsListJSON?.authors || [])
+    : [];
+  const availableLetters: string[] = searchBy === 'author'
+    ? [...new Set<string>(
+        allAuthors
+          .map((a: any) => (a.last_name || '').trim().charAt(0).toUpperCase())
+          .filter(Boolean)
+      )].sort()
+    : [];
+  const authorsByLetter: any[] = selectedLetter
+    ? allAuthors
+        .filter((a: any) => (a.last_name || '').trim().charAt(0).toUpperCase() === selectedLetter)
+        .sort((a: any, b: any) => (a.last_name || '').trim().localeCompare((b.last_name || '').trim()))
+    : [];
+
   return (
     <View
       style={{
@@ -305,7 +323,7 @@ export default function Explore(props: any) {
               size: 25,
             }}
             placeholderTextColor={Colors[colorScheme].searchBarClearIcon}
-            onClear={() => { setSuggestionsVisible(false); setUserInputEntered(''); setSearch(''); }}
+            onClear={() => { setSuggestionsVisible(false); setUserInputEntered(''); setSearch(''); setSelectedLetter(''); }}
             containerStyle={{
               backgroundColor: Colors[colorScheme].searchBarContainerStyle,
               borderTopWidth: 0,
@@ -336,6 +354,38 @@ export default function Explore(props: any) {
             </Button>
           </View>
         </View>
+        {/* Back navigation pill — shown when a genre/author search is active */}
+        {(searchBy === 'genre' && userInputEntered) ? (
+          <TouchableOpacity
+            onPress={() => { setUserInputEntered(''); setSearch(''); }}
+            style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
+          >
+            <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
+            <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
+              Browse Genres
+            </Text>
+          </TouchableOpacity>
+        ) : (searchBy === 'author' && userInputEntered) ? (
+          <TouchableOpacity
+            onPress={() => { setUserInputEntered(''); setSearch(''); setSelectedLetter(''); }}
+            style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
+          >
+            <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
+            <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
+              A–Z Authors
+            </Text>
+          </TouchableOpacity>
+        ) : (searchBy === 'author' && !userInputEntered && selectedLetter) ? (
+          <TouchableOpacity
+            onPress={() => setSelectedLetter('')}
+            style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
+          >
+            <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
+            <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
+              All Letters
+            </Text>
+          </TouchableOpacity>
+        ) : null}
         {loadingAudiobookAmount || gettingAverageReview ? (
           <LinearProgress
             color={Colors[colorScheme].linearLoadingBarColor}
@@ -562,6 +612,7 @@ export default function Explore(props: any) {
       ) : undefined}
       <View style={styles.scrollStyle}>
         {searchBy === 'genre' && !userInputEntered ? (
+          /* ── Genre browser ── */
           <FlatList
             data={props.route.params.genreList as string[]}
             keyExtractor={(item) => item}
@@ -604,6 +655,67 @@ export default function Explore(props: any) {
                     }}
                   >
                     {genre}
+                  </Text>
+                </TouchableOpacity>
+              );
+            }}
+          />
+        ) : searchBy === 'author' && !userInputEntered && !selectedLetter ? (
+          /* ── Author A–Z letter picker ── */
+          <FlatList
+            data={availableLetters}
+            keyExtractor={(item) => item}
+            numColumns={6}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            renderItem={({ item: letter }) => (
+              <TouchableOpacity
+                onPress={() => setSelectedLetter(letter)}
+                activeOpacity={0.75}
+                style={{
+                  flex: 1,
+                  margin: 3,
+                  minWidth: (windowWidth - 16) / 6 - 6,
+                  borderRadius: 6,
+                  borderWidth: 1,
+                  borderColor: Colors[colorScheme].bookshelfPickerBorderColor,
+                  backgroundColor: Colors[colorScheme].buttonBackgroundColor,
+                  paddingVertical: 10,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <Text style={{ color: Colors[colorScheme].text, fontSize: 16, fontWeight: '700' }}>
+                  {letter}
+                </Text>
+              </TouchableOpacity>
+            )}
+          />
+        ) : searchBy === 'author' && !userInputEntered && selectedLetter ? (
+          /* ── Authors list for selected letter ── */
+          <FlatList
+            data={authorsByLetter}
+            keyExtractor={(item: any) => item.id}
+            contentContainerStyle={{ paddingBottom: 16 }}
+            ItemSeparatorComponent={() => (
+              <View style={{ height: 1, backgroundColor: Colors[colorScheme].bookshelfPickerBorderColor, marginHorizontal: 4 }} />
+            )}
+            renderItem={({ item: author }: any) => {
+              const displayName = `${author.first_name ? author.first_name.trim() + ' ' : ''}${author.last_name.trim()}`;
+              return (
+                <TouchableOpacity
+                  onPress={() => {
+                    const lastName = author.last_name.trim();
+                    const fullName = displayName.trim();
+                    setSearch(fullName);
+                    setUserInputEntered(lastName);
+                    storeSearchText('userSearchAuthor', fullName);
+                    storeSearchBarSubmitted('userInputAuthorSubmitted', lastName);
+                  }}
+                  activeOpacity={0.75}
+                  style={{ paddingVertical: 12, paddingHorizontal: 8 }}
+                >
+                  <Text style={{ color: Colors[colorScheme].text, fontSize: 15 }}>
+                    {displayName}
                   </Text>
                 </TouchableOpacity>
               );
@@ -655,6 +767,23 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "row",
     alignItems: "center",
+  },
+  backPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-start',
+    marginLeft: 8,
+    marginTop: 4,
+    marginBottom: 2,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+  },
+  backPillText: {
+    fontSize: 12,
+    marginLeft: 4,
+    fontWeight: '600',
   },
   scrollStyle: {
     left: 8,
