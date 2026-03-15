@@ -354,37 +354,58 @@ export default function Explore(props: any) {
             </Button>
           </View>
         </View>
-        {/* Back navigation pill — shown when a genre/author search is active */}
+        {/* Back navigation pill + current context pill */}
         {(searchBy === 'genre' && userInputEntered) ? (
-          <TouchableOpacity
-            onPress={() => { setUserInputEntered(''); setSearch(''); }}
-            style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
-          >
-            <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
-            <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
-              Browse Genres
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.pillRow}>
+            <TouchableOpacity
+              onPress={() => { setUserInputEntered(''); setSearch(''); }}
+              style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
+            >
+              <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
+              <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
+                Browse Genres
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.infoPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor, backgroundColor: Colors[colorScheme].buttonBackgroundColor }]}>
+              <Text style={[styles.backPillText, { color: Colors[colorScheme].text }]} numberOfLines={1}>
+                {userInputEntered}
+              </Text>
+            </View>
+          </View>
         ) : (searchBy === 'author' && userInputEntered) ? (
-          <TouchableOpacity
-            onPress={() => { setUserInputEntered(''); setSearch(''); setSelectedLetter(''); }}
-            style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
-          >
-            <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
-            <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
-              A–Z Authors
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.pillRow}>
+            <TouchableOpacity
+              onPress={() => { setUserInputEntered(''); setSearch(''); setSelectedLetter(''); }}
+              style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
+            >
+              <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
+              <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
+                A–Z Authors
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.infoPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor, backgroundColor: Colors[colorScheme].buttonBackgroundColor }]}>
+              <Text style={[styles.backPillText, { color: Colors[colorScheme].text }]} numberOfLines={1}>
+                {search}
+              </Text>
+            </View>
+          </View>
         ) : (searchBy === 'author' && !userInputEntered && selectedLetter) ? (
-          <TouchableOpacity
-            onPress={() => setSelectedLetter('')}
-            style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
-          >
-            <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
-            <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
-              All Letters
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.pillRow}>
+            <TouchableOpacity
+              onPress={() => setSelectedLetter('')}
+              style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
+            >
+              <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
+              <Text style={[styles.backPillText, { color: Colors[colorScheme].activityIndicatorColor }]}>
+                All Letters
+              </Text>
+            </TouchableOpacity>
+            <View style={[styles.infoPill, { borderColor: Colors[colorScheme].bookshelfPickerBorderColor, backgroundColor: Colors[colorScheme].buttonBackgroundColor }]}>
+              <Text style={[styles.backPillText, { color: Colors[colorScheme].text }]}>
+                {selectedLetter}
+              </Text>
+            </View>
+          </View>
         ) : null}
         {loadingAudiobookAmount || gettingAverageReview ? (
           <LinearProgress
@@ -614,6 +635,7 @@ export default function Explore(props: any) {
         {searchBy === 'genre' && !userInputEntered ? (
           /* ── Genre browser ── */
           <FlatList
+            key="genre-grid"
             data={props.route.params.genreList as string[]}
             keyExtractor={(item) => item}
             numColumns={2}
@@ -663,6 +685,7 @@ export default function Explore(props: any) {
         ) : searchBy === 'author' && !userInputEntered && !selectedLetter ? (
           /* ── Author A–Z letter picker ── */
           <FlatList
+            key="author-az-grid"
             data={availableLetters}
             keyExtractor={(item) => item}
             numColumns={6}
@@ -693,6 +716,7 @@ export default function Explore(props: any) {
         ) : searchBy === 'author' && !userInputEntered && selectedLetter ? (
           /* ── Authors list for selected letter ── */
           <FlatList
+            key={`author-letter-${selectedLetter}`}
             data={authorsByLetter}
             keyExtractor={(item: any) => item.id}
             contentContainerStyle={{ paddingBottom: 16 }}
@@ -768,13 +792,27 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
   },
-  backPill: {
+  pillRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexWrap: 'wrap',
     marginLeft: 8,
     marginTop: 4,
     marginBottom: 2,
+    gap: 6,
+  },
+  infoPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 16,
+    borderWidth: 1,
+    maxWidth: 200,
+  },
+  backPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 16,
