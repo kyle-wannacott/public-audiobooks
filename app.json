@@ -32,7 +32,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.leewannacott.libriaudire",
-      "versionCode": 9,
+      "versionCode": 10,
       "permissions": [
         "android.permission.WAKE_LOCK",
         "android.permission.FOREGROUND_SERVICE",

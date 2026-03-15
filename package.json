@@ -1,6 +1,6 @@
 {
   "name": "libriaudire",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -62,7 +62,6 @@
     "@tsconfig/react-native": "^2.0.2",
     "@types/jest": "^29.2.1",
     "@types/react": "~19.1.10",
-    "@types/react-native": "~0.66.13",
     "@types/react-test-renderer": "^18.0.0",
     "babel-jest": "^29.2.1",
     "eslint": "^8.19.0",

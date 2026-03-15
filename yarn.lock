@@ -3079,15 +3079,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-native@npm:~0.66.13":
-  version: 0.66.34
-  resolution: "@types/react-native@npm:0.66.34"
-  dependencies:
-    "@types/react": "npm:^17"
-  checksum: 10c0/ac531b5b1252d9ad1d74b3b7a7211cb6264df179b1988fa1dafab6109eaf4edf4bba91a4d909b9602ef9e255e659ac9e4b81dd0b769f033ab17ee7631596d5e8
-  languageName: node
-  linkType: hard
-
 "@types/react-test-renderer@npm:^18.0.0":
   version: 18.3.1
   resolution: "@types/react-test-renderer@npm:18.3.1"
@@ -3108,17 +3099,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react@npm:^17":
-  version: 17.0.91
-  resolution: "@types/react@npm:17.0.91"
-  dependencies:
-    "@types/prop-types": "npm:*"
-    "@types/scheduler": "npm:^0.16"
-    csstype: "npm:^3.2.2"
-  checksum: 10c0/f1a5f77dbe6d62c04bfa2692d1204fd537e5fb15461a10673fa116a4b211f8ebaf426a4b1b95da04d38cea47dfc77c4d403f0850db7d9853298248a54478cc60
-  languageName: node
-  linkType: hard
-
 "@types/react@npm:~19.1.10":
   version: 19.1.17
   resolution: "@types/react@npm:19.1.17"
@@ -3128,7 +3108,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/scheduler@npm:*, @types/scheduler@npm:^0.16":
+"@types/scheduler@npm:*":
   version: 0.16.8
   resolution: "@types/scheduler@npm:0.16.8"
   checksum: 10c0/f86de504945b8fc41b1f391f847444d542e2e4067cf7e5d9bfeb5d2d2393d3203b1161bc0ef3b1e104d828dabfb60baf06e8d2c27e27ff7e8258e6e618d8c4ec
@@ -4531,7 +4511,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"csstype@npm:^3.0.2, csstype@npm:^3.2.2":
+"csstype@npm:^3.0.2":
   version: 3.2.3
   resolution: "csstype@npm:3.2.3"
   checksum: 10c0/cd29c51e70fa822f1cecd8641a1445bed7063697469d35633b516e60fe8c1bde04b08f6c5b6022136bb669b64c63d4173af54864510fbb4ee23281801841a3ce
@@ -7789,7 +7769,6 @@ __metadata:
     "@tsconfig/react-native": "npm:^2.0.2"
     "@types/jest": "npm:^29.2.1"
     "@types/react": "npm:~19.1.10"
-    "@types/react-native": "npm:~0.66.13"
     "@types/react-test-renderer": "npm:^18.0.0"
     babel-jest: "npm:^29.2.1"
     deprecated-react-native-prop-types: "npm:^4.0.0"
