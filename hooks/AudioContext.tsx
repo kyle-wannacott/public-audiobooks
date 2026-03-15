@@ -6,6 +6,7 @@ import React, {
   useCallback,
   useEffect,
 } from "react";
+import { Platform, PermissionsAndroid } from "react-native";
 import { createAudioPlayer, setAudioModeAsync } from "expo-audio";
 import * as FileSystem from "expo-file-system/legacy";
 import { openDatabase, roundNumberTwoDecimal } from "../db/utils";
@@ -141,6 +142,12 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
 
   // Load saved audio settings on mount
   useEffect(() => {
+    // Request notification permission on Android 13+ for media controls
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      PermissionsAndroid.request(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      ).catch(console.log);
+    }
     getAsyncData("audioTrackSettingsTest").then((saved: any) => {
       if (saved) setAudioPlayerSettings(saved);
     });
@@ -485,25 +492,30 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
           duration: sound.current.duration * 1000,
         });
 
-        // Lock screen / notification metadata
-        sound.current.setActiveForLockScreen(true, {
-          title: chapterTitle,
-          artist: `${book.authorFirstName} ${book.authorLastName}`,
-          albumTitle: book.title,
-          artworkUrl: book.coverImage,
-        }, {
-          showSeekForward: true,
-          showSeekBackward: true,
-        });
-
         setIsLoading(false);
         setIsLoadedOnce(true);
         setShowMiniPlayer(true);
 
-        // Start playing
+        // Start playing first so MediaSession sees an active player
         sound.current.play();
         setIsPlaying(true);
         setIsAudioPaused(false);
+
+        // Lock screen / notification — call after play() so the MediaSession
+        // sees the player in a playing state and shows controls
+        try {
+          sound.current.setActiveForLockScreen(true, {
+            title: chapterTitle,
+            artist: `${book.authorFirstName} ${book.authorLastName}`,
+            albumTitle: book.title,
+            artworkUrl: book.coverImage,
+          }, {
+            showSeekForward: true,
+            showSeekBackward: true,
+          });
+        } catch (lockErr) {
+          console.log("LockScreen setup error:", lockErr);
+        }
       } catch (error) {
         setIsLoading(false);
         console.log("LoadTrack error:", error);

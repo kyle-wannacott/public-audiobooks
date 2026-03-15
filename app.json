@@ -21,7 +21,9 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "UIBackgroundModes": ["audio"]
+        "UIBackgroundModes": [
+          "audio"
+        ]
       }
     },
     "android": {
@@ -34,7 +36,8 @@
       "permissions": [
         "android.permission.WAKE_LOCK",
         "android.permission.FOREGROUND_SERVICE",
-        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK"
+        "android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK",
+        "android.permission.POST_NOTIFICATIONS"
       ]
     },
     "web": {
@@ -50,7 +53,12 @@
       "expo-font",
       "expo-sqlite",
       "expo-web-browser",
-      ["expo-audio", { "enableBackgroundRecording": false }]
+      [
+        "expo-audio",
+        {
+          "enableBackgroundRecording": false
+        }
+      ]
     ]
   }
 }
