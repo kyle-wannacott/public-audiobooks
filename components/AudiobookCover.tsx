@@ -443,27 +443,28 @@ export default function AudiobookCover(props) {
           )}
 
           {/* Quick play button */}
-          <Button
-            mode="text"
+          <TouchableOpacity
             onPress={handleQuickPlay}
-            accessibilityLabel={
-              isCurrentlyPlaying ? `Pause ${item.title}` : `Play ${item.title}`
-            }
+            accessibilityLabel={isCurrentlyPlaying ? `Pause ${item.title}` : `Play ${item.title}`}
             style={{
               position: "absolute",
-              bottom: 14,
-              right: 0,
-              width: 40,
-              height: 48,
-              margin: 0,
+              bottom: 10,
+              right: 2,
+              width: 44,
+              height: 44,
+              alignItems: 'center',
+              justifyContent: 'center',
+              backgroundColor: 'rgba(0,0,0,0.35)',
+              borderRadius: 22,
+              zIndex: 6,
             }}
           >
             <MaterialCommunityIcons
               name={isCurrentlyPlaying ? "pause-circle" : "play-circle"}
-              size={34}
+              size={36}
               color={Colors[colorScheme].activityIndicatorColor}
             />
-          </Button>
+          </TouchableOpacity>
 
           {/* Info button */}
           <TouchableOpacity

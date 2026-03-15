@@ -371,7 +371,7 @@ export default function Explore(props: any) {
         {(searchBy === 'genre' && userInputEntered) ? (
           <View style={styles.pillRow}>
             <TouchableOpacity
-              onPress={() => { setUserInputEntered(''); setSearch(''); }}
+              onPress={() => { setUserInputEntered(''); setSearch(''); setSelectedGenre(''); storeSearchText("userSearchGenre", ''); }}
               style={[styles.backPill, { borderColor: Colors[colorScheme].activityIndicatorColor }]}
             >
               <MaterialCommunityIcons name="arrow-left" size={14} color={Colors[colorScheme].activityIndicatorColor} />
@@ -533,33 +533,30 @@ export default function Explore(props: any) {
             <Text style={{ fontSize: 15, color: currentColorScheme.text, marginRight: 8 }}>
               Display:
             </Text>
-            <Button
-              mode={bookDisplayMode === 'grid' ? 'contained' : 'outlined'}
+            <TouchableOpacity
               onPress={() => setBookDisplayMode('grid')}
-              style={{ marginRight: 8 }}
-              contentStyle={{ height: 36 }}
-              textColor={bookDisplayMode === 'grid' ? '#fff' : '#4CAF50'}
+              style={{
+                flexDirection: 'row', alignItems: 'center', marginRight: 8,
+                paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 1,
+                borderColor: bookDisplayMode === 'grid' ? currentColorScheme.activityIndicatorColor : currentColorScheme.bookshelfPickerBorderColor,
+                backgroundColor: bookDisplayMode === 'grid' ? currentColorScheme.activityIndicatorColor : 'transparent',
+              }}
             >
-              <MaterialCommunityIcons
-                name="view-grid"
-                size={18}
-                color={bookDisplayMode === 'grid' ? '#fff' : '#4CAF50'}
-              />
-              {"  Grid"}
-            </Button>
-            <Button
-              mode={bookDisplayMode === 'list' ? 'contained' : 'outlined'}
+              <MaterialCommunityIcons name="view-grid" size={18} color={bookDisplayMode === 'grid' ? '#fff' : '#4CAF50'} />
+              <Text style={{ color: bookDisplayMode === 'grid' ? '#fff' : '#4CAF50', marginLeft: 4, fontSize: 14, fontWeight: '600' }}>Grid</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
               onPress={() => setBookDisplayMode('list')}
-              contentStyle={{ height: 36 }}
-              textColor={bookDisplayMode === 'list' ? '#fff' : '#4CAF50'}
+              style={{
+                flexDirection: 'row', alignItems: 'center',
+                paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, borderWidth: 1,
+                borderColor: bookDisplayMode === 'list' ? currentColorScheme.activityIndicatorColor : currentColorScheme.bookshelfPickerBorderColor,
+                backgroundColor: bookDisplayMode === 'list' ? currentColorScheme.activityIndicatorColor : 'transparent',
+              }}
             >
-              <MaterialCommunityIcons
-                name="view-list"
-                size={18}
-                color={bookDisplayMode === 'list' ? '#fff' : '#4CAF50'}
-              />
-              {"  List"}
-            </Button>
+              <MaterialCommunityIcons name="view-list" size={18} color={bookDisplayMode === 'list' ? '#fff' : '#4CAF50'} />
+              <Text style={{ color: bookDisplayMode === 'list' ? '#fff' : '#4CAF50', marginLeft: 4, fontSize: 14, fontWeight: '600' }}>List</Text>
+            </TouchableOpacity>
           </View>
 
           {/* Volume */}
