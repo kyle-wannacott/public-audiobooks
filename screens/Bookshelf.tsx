@@ -47,13 +47,12 @@ function Bookshelf(props:any) {
   const asyncDataKeyNameForPickerAndToggle = "pickerAndQueryDataBookshelf";
 
   return (
-    <View>
+    <View style={{ flex: 1, paddingTop: insets.top }}>
       <BookShelfAndHistoryShelf
         getShelvedBooks={getShelvedBooks}
         audiobookHistory={audiobookHistory}
         loadingHistory={loadingHistory}
         asyncDataKeyName={asyncDataKeyNameForPickerAndToggle}
-        shelfHeightOffset={200}
       />
     </View>
   );

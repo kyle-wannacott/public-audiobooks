@@ -208,7 +208,7 @@ export default function BookShelfAndHistoryShelf(props: any) {
   if (!props.loadingHistory && prefsLoaded) {
     const miniPlayerOffset = (showMiniPlayer && miniPlayerEnabled) ? MINI_PLAYER_CONTENT_HEIGHT : 0;
     return (
-      <View>
+      <View style={{ flex: 1 }}>
         <PickerForHistoryAndBookShelf
           pickerAndQueryState={pickerAndQueryState}
           setPickerAndQueryState={setPickerAndQueryState}
@@ -221,8 +221,8 @@ export default function BookShelfAndHistoryShelf(props: any) {
           style={[
             styles.flatListStyle,
             {
+              flex: 1,
               backgroundColor: Colors[colorScheme].background,
-              height: windowHeight - props.shelfHeightOffset - miniPlayerOffset,
             },
           ]}
         >
@@ -232,6 +232,7 @@ export default function BookShelfAndHistoryShelf(props: any) {
             keyExtractor={keyExtractor}
             renderItem={renderItem}
             numColumns={bookDisplayMode === 'grid' ? 2 : 1}
+            contentContainerStyle={{ paddingBottom: miniPlayerOffset }}
             removeClippedSubviews={true}
             maxToRenderPerBatch={6}
             initialNumToRender={6}

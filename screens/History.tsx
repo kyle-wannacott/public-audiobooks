@@ -51,13 +51,12 @@ function History() {
   const asyncDataKeyNameForPickerAndToggle = "pickerAndQueryDataHistory";
 
   return (
-    <View style={{ paddingTop: insets.top }}>
+    <View style={{ flex: 1, paddingTop: insets.top }}>
       <BookShelfAndHistoryShelf
         getShelvedBooks={getShelvedBooks}
         audiobookHistory={audiobookHistory}
         loadingHistory={loadingHistory}
         asyncDataKeyName={asyncDataKeyNameForPickerAndToggle}
-        shelfHeightOffset={150}
       />
     </View>
   );

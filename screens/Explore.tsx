@@ -282,6 +282,7 @@ export default function Explore(props: any) {
   return (
     <View
       style={{
+        flex: 1,
         display: "flex",
         backgroundColor: Colors[colorScheme].background,
       }}
@@ -831,7 +832,7 @@ const styles = StyleSheet.create({
     top: 80,
     left: 10,
     zIndex: 1000,
-    height: windowHeight - 480,
+    maxHeight: windowHeight * 0.5,
     width: windowWidth - 90,
   },
   titleOrAuthorStringFlexbox: {
@@ -872,6 +873,6 @@ const styles = StyleSheet.create({
   },
   scrollStyle: {
     left: 8,
-    height: 525,
+    flex: 1,
   },
 });
