@@ -2,7 +2,7 @@
   "expo": {
     "name": "Public Audiobooks",
     "slug": "libriaudire",
-    "version": "3.1.0",
+    "version": "3.1.1",
     "orientation": "portrait",
     "icon": "./assets/images/PublicAudiobooksIcon.png",
     "scheme": "myapp",
@@ -32,7 +32,7 @@
         "backgroundColor": "#000000"
       },
       "package": "com.leewannacott.libriaudire",
-      "versionCode": 11,
+      "versionCode": 12,
       "permissions": [
         "android.permission.WAKE_LOCK",
         "android.permission.FOREGROUND_SERVICE",
